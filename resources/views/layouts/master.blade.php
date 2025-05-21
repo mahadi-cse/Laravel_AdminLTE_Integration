@@ -10,26 +10,21 @@
   <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <div class="app-wrapper">
 
-     @include('partial.header')
+
+    @if (!isset($hideHeader) || !$hideHeader)
+    @include('partial.header')
+    @endif
+
      @include('partial.sidebar')
 
       <main class="app-main">
         <!--begin::App Content Header-->
         <div class="app-content-header">
           <!--begin::Container-->
-          <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row">
-              <div class="col-sm-6"><h3 class="mb-0">@yield('breadcrumb-title', 'Dashboard')</h3></div>
-              <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-end">
-                  <li class="breadcrumb-item"><a href="#">Home</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">@yield('option-title', 'Dashboard')</li>
-                </ol>
-              </div>
-            </div>
-            <!--end::Row-->
-          </div>
+            @if (!isset($hideBreadcrumb) || !$hideBreadcrumb)
+            @include('partial.breadcrumb')
+            @endif
+         
           <!--end::Container-->
         </div>
         <!--end::App Content Header-->
