@@ -27,8 +27,8 @@
               role="menu"
               data-accordion="false"
             >
-              <li class="nav-item menu-open">
-                <a href="#" class="nav-link active">
+              <li class="nav-item">
+                <a href="#" class="nav-link">
                   <i class="nav-icon bi bi-speedometer"></i>
                   <p>
                     Dashboard
@@ -37,7 +37,7 @@
                 </a>
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
-                    <a href="./index.html" class="nav-link active">
+                    <a href="./index.html" class="nav-link">
                       <i class="nav-icon bi bi-circle"></i>
                       <p>Dashboard v1</p>
                     </a>
@@ -56,7 +56,7 @@
                   </li>
                 </ul>
               </li>
-              <li class="nav-item">
+              <li class="nav-item menu-open active">
                 <a href="#" class="nav-link">
                   <i class="nav-icon bi bi-pencil-square"></i>
                   <p>
@@ -69,6 +69,14 @@
                     <a  href="{{ route('form') }}" class="nav-link">
                       <i class="nav-icon bi bi-circle"></i>
                       <p>General Form</p>
+                    </a>
+                  </li>
+                </ul>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a  href="{{ route('test') }}" class="nav-link ">
+                      <i class="nav-icon bi bi-circle"></i>
+                      <p>Testing Form</p>
                     </a>
                   </li>
                 </ul>

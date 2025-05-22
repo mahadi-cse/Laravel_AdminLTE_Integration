@@ -136,6 +136,8 @@
 <body class="bg-light p-4">
     <div class="container">
 
+        <!-- Display backend validation errors -->
+        <div id="backend-errors" class="alert alert-danger d-none"></div>
         <!-- Step Buttons -->
         <nav class="row g-2 w-100 mb-4">
             <div class="col-12 col-sm-3">
@@ -204,7 +206,7 @@
                         <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="mother-name" name="mother-name"
                         placeholder="Enter your Mother Name">
-                </div>
+                </div> 
 
                 <!-- Phone Number -->
                 <div class="col-md-6">
@@ -372,7 +374,12 @@
                                     <input type="text" class="form-control" placeholder="Enter Institute Name">
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control" placeholder="Enter Passing Year">
+                                    <div class="input-group">
+                                    <input type="text" class="form-control" id="ps" placeholder="Enter Passing Year">
+                                     <span class="input-group-text" id="psIcon" style="cursor: pointer;">
+                            <i class="bi bi-calendar"></i> <!-- Bootstrap Icons -->
+                        </span>
+                                </div>
                                 </td>
                                 <td>
                                     <input type="number" class="form-control" placeholder="Enter CGPA">
@@ -385,6 +392,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="cgpa-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                 </div>
                 <div class="button_container" style="
                     display: flex;
@@ -454,6 +462,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="experience-date-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                 </div>
                 <div class="button_container" style="
                     display: flex;
@@ -492,8 +501,14 @@
                                 <td>
                                     <input type="number" class="form-control" placeholder="Enter Duration">
                                 </td>
-                                <td>
-                                    <input type="text" class="form-control" placeholder="Enter Training Year">
+                               <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="ty"
+                                            placeholder="Enter Training Year">
+                                        <span class="input-group-text" id="tyIcon" style="cursor: pointer;">
+                                            <i class="bi bi-calendar"></i> <!-- Bootstrap Icons -->
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control" placeholder="Enter Location">
@@ -1163,6 +1178,7 @@
                     row.querySelectorAll('input').forEach(input => input.classList.remove('is-invalid'));
                 });
             }
+            if (!validateCgpaFields()) valid = false;
             return valid;
         }
 
@@ -1196,6 +1212,7 @@
                     row.querySelectorAll('input').forEach(input => input.classList.remove('is-invalid'));
                 });
             }
+            if (!validateExperienceDates()) valid = false;
             return valid;
         }
 
@@ -1232,8 +1249,70 @@
             return valid;
         }
 
+        // CGPA validation (must be <= 5)
+        function validateCgpaFields() {
+            let hasError = false;
+            let cgpaInputs = document.querySelectorAll('#academic-rows input[placeholder="Enter CGPA"]');
+            cgpaInputs.forEach(function(input) {
+                if (input.value && parseFloat(input.value) > 5) {
+                    hasError = true;
+                }
+            });
+            const cgpaError = document.getElementById('cgpa-error');
+            if (hasError) {
+                cgpaError.textContent = 'CGPA must be less than or equal to 5.';
+                cgpaError.style.display = 'block';
+            } else {
+                cgpaError.textContent = '';
+                cgpaError.style.display = 'none';
+            }
+            return !hasError;
+        }
+
+        // Experience date validation (end date >= start date)
+        function validateExperienceDates() {
+            let hasError = false;
+            let errorMsg = '';
+            let rows = document.querySelectorAll('#experience-table-body tr');
+            rows.forEach(function(row) {
+                let start = row.querySelector('.start-date');
+                let end = row.querySelector('.end-date');
+                if (start && end && start.value && end.value) {
+                    let startDate = new Date(start.value);
+                    let endDate = new Date(end.value);
+                    if (endDate < startDate) {
+                        hasError = true;
+                    }
+                }
+            });
+            const expError = document.getElementById('experience-date-error');
+            if (hasError) {
+                expError.textContent = 'End date cannot be before start date.';
+                expError.style.display = 'block';
+            } else {
+                expError.textContent = '';
+                expError.style.display = 'none';
+            }
+            return !hasError;
+        }
+
+        // CGPA input event: hide error on change if fixed
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.placeholder === 'Enter CGPA') {
+                validateCgpaFields();
+            }
+        });
+
+        // Experience date input event: hide error on change if fixed
+        document.addEventListener('change', function(e) {
+            if (e.target && (e.target.classList.contains('start-date') || e.target.classList.contains('end-date'))) {
+                validateExperienceDates();
+            }
+        });
+
         // jQuery UI Datepicker for DOB
         $(function () {
+            
             $("#dob").datepicker({
                 dateFormat: "yy-mm-dd",
                 changeMonth: true,
@@ -1246,7 +1325,24 @@
             $("#dobIcon").on("click", function () {
                 $("#dob").datepicker("show");
             });
+            
+            $(function () {
+            $("#ps").datepicker({
+                dateFormat: "yy-mm-dd",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1900:2025",
+                maxDate: 0
+            });
+
+            // Open datepicker when icon is clicked
+            $("#psIcon").on("click", function () {
+                $("#ps").datepicker("show");
+            });
         });
+
+        
+    });
 
         $(function () {
             function calculateYearsAndMonths() {
@@ -1332,7 +1428,22 @@
                     // Optionally reload or redirect
                 },
                 error: function(xhr) {
-                    alert(xhr.responseJSON?.message || 'Upload failed');
+                    let errorDiv = document.getElementById('backend-errors');
+                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        let html = '<ul class="mb-0">';
+                        Object.values(xhr.responseJSON.errors).forEach(function(msgArr) {
+                            msgArr.forEach(function(msg) {
+                                html += '<li>' + msg + '</li>';
+                            });
+                        });
+                        html += '</ul>';
+                        errorDiv.innerHTML = html;
+                        errorDiv.classList.remove('d-none');
+                        window.scrollTo({ top: errorDiv.offsetTop - 30, behavior: 'smooth' });
+                    } else {
+                        errorDiv.innerHTML = xhr.responseJSON?.message || 'Upload failed';
+                        errorDiv.classList.remove('d-none');
+                    }
                 }
             });
         });

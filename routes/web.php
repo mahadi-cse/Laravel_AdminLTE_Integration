@@ -24,7 +24,7 @@ Route::middleware([
     })->name('dashboard');
 
     Route::get('/form', function () {
-        return view('test');
+        return view('form');
     })->name('form');
     Route::get('/test', function () {
         return view('test');

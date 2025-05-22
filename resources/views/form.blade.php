@@ -300,7 +300,7 @@
                                 <label class="form-check-label" for="bidRadio">BID</label>
                             </div>
                         </div>
-
+                        <div id="identity-error" class="text-danger mt-2" style="display:none; font-size:0.95em;"></div>
                         <!-- Input field section -->
                         <div class="mt-4">
                             <!-- NID -->
@@ -309,6 +309,7 @@
                                     Number</label>
                                 <input type="number" class="form-control" id="nid-number" name="nid-number"
                                     placeholder="Enter NID">
+                                <div id="nid-number-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                             </div>
                             <!-- BID -->
                             <div id="bid-input-group" class="align-items-center d-none">
@@ -316,6 +317,7 @@
                                     Number</label>
                                 <input type="number" class="form-control" id="bid-number" name="bid-number"
                                     placeholder="Enter BID">
+                                <div id="bid-number-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                             </div>
                         </div>
                     </div>
@@ -383,6 +385,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="cgpa-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                 </div>
                 <div class="button_container" style="
                     display: flex;
@@ -452,6 +455,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div id="experience-date-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                 </div>
                 <div class="button_container" style="
                     display: flex;
@@ -965,11 +969,16 @@
             }
         });
 
-        // NID/BID toggle logic
+        // NID/BID toggle logic and validation
         const nidRadio = document.getElementById('nidRadio');
         const bidRadio = document.getElementById('bidRadio');
         const nidInputGroup = document.getElementById('nid-input-group');
         const bidInputGroup = document.getElementById('bid-input-group');
+        const identityError = document.getElementById('identity-error');
+        const nidNumberError = document.getElementById('nid-number-error');
+        const bidNumberError = document.getElementById('bid-number-error');
+        const nidNumberInput = document.getElementById('nid-number');
+        const bidNumberInput = document.getElementById('bid-number');
 
         function toggleInputs() {
             if (nidRadio.checked) {
@@ -982,27 +991,58 @@
                 nidInputGroup.classList.add('d-none');
                 bidInputGroup.classList.add('d-none');
             }
+            // Hide only the radio error on toggle
+            identityError.style.display = 'none';
+            // Do NOT hide the input errors here, so they only show on Next
         }
         nidRadio.addEventListener('change', toggleInputs);
         bidRadio.addEventListener('change', toggleInputs);
         // Hide both on load
         toggleInputs();
 
+        // Identity validation logic (only on Next/page change)
+        function validateIdentityField() {
+            let valid = true;
+            identityError.style.display = 'none';
+            nidNumberError.style.display = 'none';
+            bidNumberError.style.display = 'none';
+            nidNumberInput.classList.remove('is-invalid');
+            bidNumberInput.classList.remove('is-invalid');
 
-        // Required fields for Step 1 (all fields except those without *)
-        const requiredFieldsStep1 = [
-            { id: 'name', label: 'Name' },
-            { id: 'father-name', label: 'Father Name' },
-            { id: 'mother-name', label: 'Mother Name' },
-            { id: 'phone-number', label: 'Phone Number' },
-            { id: 'email', label: 'Email' },
-            { id: 'category', label: 'Category', type: 'select' },
-            { id: 'nidRadio', label: 'Identity NID', type: 'radio' },
-            { id: 'bidRadio', label: 'Identity BID', type: 'radio' }
-        ];
+            if (!nidRadio.checked && !bidRadio.checked) {
+                identityError.textContent = 'Please select either NID or BID.';
+                identityError.style.display = 'block';
+                valid = false;
+            } else if (nidRadio.checked) {
+                if (!nidNumberInput.value.trim()) {
+                    nidNumberError.textContent = 'Please enter your NID number.';
+                    nidNumberError.style.display = 'block';
+                    nidNumberInput.classList.add('is-invalid');
+                    valid = false;
+                }
+            } else if (bidRadio.checked) {
+                if (!bidNumberInput.value.trim()) {
+                    bidNumberError.textContent = 'Please enter your BID number.';
+                    bidNumberError.style.display = 'block';
+                    bidNumberInput.classList.add('is-invalid');
+                    valid = false;
+                }
+            }
+            return valid;
+        }
 
         function validateStep1() {
             let valid = true;
+            const requiredFieldsStep1 = [
+                { id: 'name', label: 'Name' },
+                { id: 'father-name', label: 'Father Name' },
+                { id: 'mother-name', label: 'Mother Name' },
+                { id: 'phone-number', label: 'Phone Number' },
+                { id: 'email', label: 'Email' },
+                { id: 'category', label: 'Category', type: 'select' },
+                { id: 'nidRadio', label: 'Identity NID', type: 'radio' },
+                { id: 'bidRadio', label: 'Identity BID', type: 'radio' }
+            ];
             let identityChecked = false;
             requiredFieldsStep1.forEach(field => {
                 if (field.type === 'select') {
@@ -1087,6 +1127,8 @@
                     phoneError.style.display = "none";
                 }
             }
+            // Identity validation (radio + number)
+            if (!validateIdentityField()) valid = false;
             return valid;
         }
 
@@ -1123,6 +1165,7 @@
                     row.querySelectorAll('input').forEach(input => input.classList.remove('is-invalid'));
                 });
             }
+            if (!validateCgpaFields()) valid = false;
             return valid;
         }
 
@@ -1156,6 +1199,7 @@
                     row.querySelectorAll('input').forEach(input => input.classList.remove('is-invalid'));
                 });
             }
+            if (!validateExperienceDates()) valid = false;
             return valid;
         }
 
@@ -1191,6 +1235,67 @@
             }
             return valid;
         }
+
+        // CGPA validation (must be <= 5)
+        function validateCgpaFields() {
+            let hasError = false;
+            let cgpaInputs = document.querySelectorAll('#academic-rows input[placeholder="Enter CGPA"]');
+            cgpaInputs.forEach(function(input) {
+                if (input.value && parseFloat(input.value) > 5) {
+                    hasError = true;
+                }
+            });
+            const cgpaError = document.getElementById('cgpa-error');
+            if (hasError) {
+                cgpaError.textContent = 'CGPA must be less than or equal to 5.';
+                cgpaError.style.display = 'block';
+            } else {
+                cgpaError.textContent = '';
+                cgpaError.style.display = 'none';
+            }
+            return !hasError;
+        }
+
+        // Experience date validation (end date >= start date)
+        function validateExperienceDates() {
+            let hasError = false;
+            let errorMsg = '';
+            let rows = document.querySelectorAll('#experience-table-body tr');
+            rows.forEach(function(row) {
+                let start = row.querySelector('.start-date');
+                let end = row.querySelector('.end-date');
+                if (start && end && start.value && end.value) {
+                    let startDate = new Date(start.value);
+                    let endDate = new Date(end.value);
+                    if (endDate < startDate) {
+                        hasError = true;
+                    }
+                }
+            });
+            const expError = document.getElementById('experience-date-error');
+            if (hasError) {
+                expError.textContent = 'End date cannot be before start date.';
+                expError.style.display = 'block';
+            } else {
+                expError.textContent = '';
+                expError.style.display = 'none';
+            }
+            return !hasError;
+        }
+
+        // CGPA input event: hide error on change if fixed
+        document.addEventListener('input', function(e) {
+            if (e.target && e.target.placeholder === 'Enter CGPA') {
+                validateCgpaFields();
+            }
+        });
+
+        // Experience date input event: hide error on change if fixed
+        document.addEventListener('change', function(e) {
+            if (e.target && (e.target.classList.contains('start-date') || e.target.classList.contains('end-date'))) {
+                validateExperienceDates();
+            }
+        });
 
         // jQuery UI Datepicker for DOB
         $(function () {
