@@ -375,11 +375,11 @@
                                 </td>
                                 <td>
                                     <div class="input-group">
-                                    <input type="text" class="form-control" id="ps" placeholder="Enter Passing Year">
-                                     <span class="input-group-text" id="psIcon" style="cursor: pointer;">
-                            <i class="bi bi-calendar"></i> <!-- Bootstrap Icons -->
-                        </span>
-                                </div>
+                                        <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
+                                        <span class="input-group-text psIcon" style="cursor: pointer;">
+                                            <i class="bi bi-calendar"></i> <!-- Bootstrap Icons -->
+                                        </span>
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="number" class="form-control" placeholder="Enter CGPA">
@@ -501,11 +501,10 @@
                                 <td>
                                     <input type="number" class="form-control" placeholder="Enter Duration">
                                 </td>
-                               <td>
+                                <td>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" id="ty"
-                                            placeholder="Enter Training Year">
-                                        <span class="input-group-text" id="tyIcon" style="cursor: pointer;">
+                                        <input type="text" class="form-control training-year" placeholder="Enter Training Year" autocomplete="off">
+                                        <span class="input-group-text tyIcon" style="cursor: pointer;">
                                             <i class="bi bi-calendar"></i> <!-- Bootstrap Icons -->
                                         </span>
                                     </div>
@@ -717,10 +716,15 @@
                 <input type="text" class="form-control" placeholder="Enter Institute Name">
             </td>
             <td>
-                <input type="text" class="form-control" placeholder="Enter Passing Year">
+                <div class="input-group">
+                    <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
+                    <span class="input-group-text psIcon" style="cursor: pointer;">
+                        <i class="bi bi-calendar"></i>
+                    </span>
+                </div>
             </td>
             <td>
-                <input type="text" class="form-control" placeholder="Enter CGPA">
+                <input type="number" class="form-control" placeholder="Enter CGPA">
             </td>
             <td class="text-center">
                 <button type="button" class="btn btn-danger remove-academic-row">
@@ -734,10 +738,83 @@
                 newRow.querySelector('.remove-academic-row').addEventListener('click', function () {
                     academicRows.removeChild(newRow);
                 });
+
+                // Add year-only datepicker to new row
+                $(newRow).find('.passing-year').datepicker({
+                    dateFormat: "yy",
+                    changeMonth: false,
+                    changeYear: true,
+                    yearRange: "1900:2025",
+                    maxDate: 0,
+                    showButtonPanel: true,
+                    beforeShow: function(input, inst) {
+                        // Hide month and calendar grid, show only year and Done
+                        setTimeout(function() {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                            // Custom Done button handler
+                            $('.ui-datepicker-close').off('click').on('click', function() {
+                                var year = $(input).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                                $(input).val(year);
+                                $(input).datepicker('hide');
+                            });
+                        }, 1);
+                    },
+                    onChangeMonthYear: function(year, month, inst) {
+                        setTimeout(function() {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                        }, 1);
+                    },
+                    onClose: function(dateText, inst) {
+                        // Always set value to selected year from dropdown
+                        var year = $(this).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                        if (year) $(this).val(year);
+                    }
+                });
+                // Icon click opens datepicker for this row
+                $(newRow).find('.psIcon').on('click', function() {
+                    $(this).siblings('.passing-year').datepicker('show');
+                });
             }
 
             // Add event listener to the initial add button
             document.querySelector('.add-academic-row').addEventListener('click', addNewRow);
+
+            // Initialize year-only datepicker for existing rows
+            $('#academic-rows .passing-year').datepicker({
+                dateFormat: "yy",
+                changeMonth: false,
+                changeYear: true,
+                yearRange: "1900:2025",
+                maxDate: 0,
+                showButtonPanel: true,
+                beforeShow: function(input, inst) {
+                    setTimeout(function() {
+                        $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                        $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                        $('.ui-datepicker-close').off('click').on('click', function() {
+                            var year = $(input).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                            $(input).val(year);
+                            $(input).datepicker('hide');
+                        });
+                    }, 1);
+                },
+                onChangeMonthYear: function(year, month, inst) {
+                    setTimeout(function() {
+                        $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                        $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                    }, 1);
+                },
+                onClose: function(dateText, inst) {
+                    var year = $(this).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                    if (year) $(this).val(year);
+                }
+            });
+            // Icon click for existing rows
+            $('#academic-rows .psIcon').on('click', function() {
+                $(this).siblings('.passing-year').datepicker('show');
+            });
         });
 
         // Add experience row
@@ -798,7 +875,7 @@
                     maxDate: 0
                 });
 
-                // Add date change listeners to calculate duration
+                // Add date change listeners to calculate duration for this row only
                 setupDateListeners(newRow);
             }
 
@@ -820,22 +897,31 @@
                     }
                 }
 
+                // Listen to both 'input' and 'change' events for manual typing and datepicker
+                startDateInput.addEventListener('input', updateYears);
+                endDateInput.addEventListener('input', updateYears);
                 startDateInput.addEventListener('change', updateYears);
                 endDateInput.addEventListener('change', updateYears);
+
+                // Also trigger calculation when date is picked via datepicker
+                $(startDateInput).datepicker('option', 'onSelect', function() { updateYears(); });
+                $(endDateInput).datepicker('option', 'onSelect', function() { updateYears(); });
             }
 
             // Add event listener to the initial add button
             document.querySelector('.add-experience-row').addEventListener('click', addExperienceRow);
 
-            // Setup datepickers and listeners for the first row
-            $(experienceTableBody.querySelectorAll('.start-date, .end-date')).datepicker({
-                dateFormat: "yy-mm-dd",
-                changeMonth: true,
-                changeYear: true,
-                yearRange: "1950:2025",
-                maxDate: 0
+            // Setup datepickers and listeners for all existing rows (including first row)
+            experienceTableBody.querySelectorAll('tr').forEach(function(row) {
+                $(row).find('.start-date, .end-date').datepicker({
+                    dateFormat: "yy-mm-dd",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1950:2025",
+                    maxDate: 0
+                });
+                setupDateListeners(row);
             });
-            setupDateListeners(experienceTableBody.querySelector('tr'));
         });
 
         // Add training row
@@ -843,7 +929,7 @@
             const trainingTableBody = document.getElementById('training-table-body');
 
             // Function to add a new training row
-            function addTrainingRow() {
+            window.addTrainingRow = function() {
                 const newRow = document.createElement('tr');
                 newRow.innerHTML = `
             <td>
@@ -853,10 +939,15 @@
                 <input type="text" class="form-control" placeholder="Enter Institute Name">
             </td>
             <td>
-                <input type="text" class="form-control" placeholder="Enter Duration">
+                <input type="number" class="form-control" placeholder="Enter Duration">
             </td>
             <td>
-                <input type="text" class="form-control" placeholder="Enter Training Year">
+                <div class="input-group">
+                    <input type="text" class="form-control training-year" placeholder="Enter Training Year" autocomplete="off">
+                    <span class="input-group-text tyIcon" style="cursor: pointer;">
+                        <i class="bi bi-calendar"></i>
+                    </span>
+                </div>
             </td>
             <td>
                 <input type="text" class="form-control" placeholder="Enter Location">
@@ -873,12 +964,82 @@
                 newRow.querySelector('.remove-training-row').addEventListener('click', function () {
                     trainingTableBody.removeChild(newRow);
                 });
+
+                // Add year-only datepicker to new row
+                $(newRow).find('.training-year').datepicker({
+                    dateFormat: "yy",
+                    changeMonth: false,
+                    changeYear: true,
+                    yearRange: "1950:2025",
+                    maxDate: 0,
+                    showButtonPanel: true,
+                    beforeShow: function(input, inst) {
+                        setTimeout(function() {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                            $('.ui-datepicker-close').off('click').on('click', function() {
+                                var year = $(input).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                                $(input).val(year);
+                                $(input).datepicker('hide');
+                            });
+                        }, 1);
+                    },
+                    onChangeMonthYear: function(year, month, inst) {
+                        setTimeout(function() {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                        }, 1);
+                    },
+                    onClose: function(dateText, inst) {
+                        var year = $(this).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                        if (year) $(this).val(year);
+                    }
+                });
+                // Icon click opens datepicker for this row
+                $(newRow).find('.tyIcon').on('click', function() {
+                    $(this).siblings('.training-year').datepicker('show');
+                });
             }
 
             // Add event listener to the initial add button
             trainingTableBody.querySelector('button.btn.btn-primary').addEventListener('click', function (e) {
                 e.preventDefault();
-                addTrainingRow();
+                window.addTrainingRow();
+            });
+
+            // Initialize year-only datepicker for existing row
+            $('#training-table-body .training-year').datepicker({
+                dateFormat: "yy",
+                changeMonth: false,
+                changeYear: true,
+                yearRange: "1950:2025",
+                maxDate: 0,
+                showButtonPanel: true,
+                beforeShow: function(input, inst) {
+                    setTimeout(function() {
+                        $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                        $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                        $('.ui-datepicker-close').off('click').on('click', function() {
+                            var year = $(input).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                            $(input).val(year);
+                            $(input).datepicker('hide');
+                        });
+                    }, 1);
+                },
+                onChangeMonthYear: function(year, month, inst) {
+                    setTimeout(function() {
+                        $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                        $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                    }, 1);
+                },
+                onClose: function(dateText, inst) {
+                    var year = $(this).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                    if (year) $(this).val(year);
+                }
+            });
+            // Icon click for existing row
+            $('#training-table-body .tyIcon').on('click', function() {
+                $(this).siblings('.training-year').datepicker('show');
             });
         });
 
@@ -1328,8 +1489,8 @@
             
             $(function () {
             $("#ps").datepicker({
-                dateFormat: "yy-mm-dd",
-                changeMonth: true,
+                dateFormat: "yy",
+                changeMonth: false,
                 changeYear: true,
                 yearRange: "1900:2025",
                 maxDate: 0
@@ -1414,6 +1575,55 @@
         $('#multiStepForm').on('submit', function(e) {
             e.preventDefault();
             var formData = new FormData(this);
+            // Collect Academic Info
+            var academicRows = document.querySelectorAll('#academic-rows tr');
+            var academicInfo = [];
+            academicRows.forEach(function(row) {
+                var inputs = row.querySelectorAll('input');
+                if(inputs.length === 5) {
+                    academicInfo.push({
+                        education_level: inputs[0].value,
+                        department: inputs[1].value,
+                        institute_name: inputs[2].value,
+                        passing_year: inputs[3].value,
+                        cgpa: inputs[4].value
+                    });
+                }
+            });
+            formData.append('academic_info', JSON.stringify(academicInfo));
+            // Collect Experience Info
+            var expRows = document.querySelectorAll('#experience-table-body tr');
+            var experienceInfo = [];
+            expRows.forEach(function(row) {
+                var inputs = row.querySelectorAll('input');
+                if(inputs.length >= 5) {
+                    experienceInfo.push({
+                        company_name: inputs[0].value,
+                        designation: inputs[1].value,
+                        location: inputs[2].value,
+                        start_date: inputs[3].value,
+                        end_date: inputs[4].value,
+                        total_years: inputs[5] ? inputs[5].value : null
+                    });
+                }
+            });
+            formData.append('experience_info', JSON.stringify(experienceInfo));
+            // Collect Training Info
+            var trainRows = document.querySelectorAll('#training-table-body tr');
+            var trainingInfo = [];
+            trainRows.forEach(function(row) {
+                var inputs = row.querySelectorAll('input');
+                if(inputs.length === 5) {
+                    trainingInfo.push({
+                        training_title: inputs[0].value,
+                        institute_name: inputs[1].value,
+                        duration: inputs[2].value,
+                        training_year: inputs[3].value,
+                        location: inputs[4].value
+                    });
+                }
+            });
+            formData.append('training_info', JSON.stringify(trainingInfo));
             // Optionally, add extra validation here
             $.ajax({
                 type: 'POST',
