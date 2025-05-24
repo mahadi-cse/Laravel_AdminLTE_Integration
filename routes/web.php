@@ -5,6 +5,11 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\NationalityController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\HobbyController;
+use App\Http\Controllers\FormController;
+
+Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
+Route::get('/forms/{id}/edit', fn($id) => "Edit Form ID: $id")->name('forms.edit'); 
+
 
 // Override registration
 Route::post('/register', [RegisteredUserController::class, 'store'])
@@ -29,8 +34,13 @@ Route::middleware([
     Route::get('/test', function () {
         return view('test');
     })->name('test');
+    // Application List page
+    Route::get('/application-list', function () {
+        return view('application_list');
+    })->name('application.list');
 });
 
 Route::get('/nationalities', [NationalityController::class, 'index'])->name('nationalities.index');
 Route::post('/upload', [UploadController::class, 'store'])->name('upload.store');
 Route::get('/hobbies', [HobbyController::class, 'index'])->name('hobbies.index');
+Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
