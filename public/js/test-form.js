@@ -1097,7 +1097,7 @@ $('#multiStepForm').on('submit', function (e) {
 $('.save-draft-btn').on('click', function (e) {
     e.preventDefault();
     var formData = new FormData(document.getElementById('multiStepForm'));
-    formData.append('is_draft', '1');
+    formData.append('is_draft', '-1');
 
     // Collect Academic Info
     var academicRows = document.querySelectorAll('#academic-rows tr');
@@ -1168,6 +1168,8 @@ $('.save-draft-btn').on('click', function (e) {
             if (xhr.responseJSON && xhr.responseJSON.errors) {
                 $('#backend-errors').removeClass('d-none').html(Object.values(xhr.responseJSON.errors).join('<br>'));
             } else {
+                // print the error message inside aleart 
+                console.error(xhr);
                 alert('Error saving draft.');
             }
         }

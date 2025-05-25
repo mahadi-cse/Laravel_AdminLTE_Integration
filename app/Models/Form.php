@@ -9,6 +9,6 @@ class Form extends Model
     protected $fillable = [
         'user_id',
         'applicant_name',
-        'form_status',
+        'status',
     ];
 }

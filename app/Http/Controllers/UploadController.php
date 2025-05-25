@@ -14,56 +14,60 @@ class UploadController extends Controller
 {
     public function store(Request $request)
     {
-        $isDraft = $request->input('is_draft') == '1';
+        // $isDraft = $request->input('is_draft') == '1';
         $user = Auth::user();
+        $applicantName = $request->input('name') ?: $request->input('applicant_name') ?: null;
         if ($user) {
             \App\Models\Form::updateOrCreate(
                 ['user_id' => $user->id],
-                ['status' => $isDraft ? 'draft' : 'submitted']
+                [
+                    'applicant_name' => $applicantName,
+                    'status' => 0
+                ]
             );
         }
 
         // If draft, skip most validation, only save filled fields
-        if ($isDraft) {
-            $fields = [
-                'user_id' => Auth::user() ? Auth::user()->id : null,
-                'name' => $request->input('name') ?: null,
-                'father_name' => $request->input('father-name') ?: null,
-                'mother_name' => $request->input('mother-name') ?: null,
-                'email' => $request->input('email') ?: null,
-                'phone_number' => $request->input('phone-number') ?: null,
-                'present_address' => $request->input('present-address') ?: null,
-                'permanent_address' => $request->input('permanent-address') ?: null,
-                'nationality' => $request->input('nationality') ?: null,
-                'hobby' => $request->input('hobby') ?: null,
-                'dob' => $request->input('dob') ?: null,
-                'gender' => $request->input('gender') ?: null,
-                'identity_type' => $request->input('identityType') ?: null,
-                'nid_number' => $request->input('nid-number') ?: null,
-                'bid_number' => $request->input('bid-number') ?: null,
-                'profile_photo_path' => null,
-                'covid_certificate_path' => null,
-                'description' => $request->input('description') ?: null,
-                'status' => 'draft',
-            ];
-            // Handle file uploads if present
-            if ($request->hasFile('profile-photo')) {
-                $file = $request->file('profile-photo');
-                $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/uploads', $filename);
-                $fields['profile_photo_path'] = 'storage/uploads/' . $filename;
-                Upload::create(['filename' => $filename, 'type' => 'profile']);
-            }
-            if ($request->hasFile('covid-certificate')) {
-                $file = $request->file('covid-certificate');
-                $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/uploads', $filename);
-                $fields['covid_certificate_path'] = 'storage/uploads/' . $filename;
-                Upload::create(['filename' => $filename, 'type' => 'covid']);
-            }
-            $personal = PersonalInfo::create($fields);
-            return response()->json(['success' => 'Draft saved successfully!', 'draft' => true]);
-        }
+        // if ($isDraft) {
+        //     $fields = [
+        //         'user_id' => Auth::user() ? Auth::user()->id : null,
+        //         'name' => $request->input('name') ?: null,
+        //         'father_name' => $request->input('father-name') ?: null,
+        //         'mother_name' => $request->input('mother-name') ?: null,
+        //         'email' => $request->input('email') ?: null,
+        //         'phone_number' => $request->input('phone-number') ?: null,
+        //         'present_address' => $request->input('present-address') ?: null,
+        //         'permanent_address' => $request->input('permanent-address') ?: null,
+        //         'nationality' => $request->input('nationality') ?: null,
+        //         'hobby' => $request->input('hobby') ?: null,
+        //         'dob' => $request->input('dob') ?: null,
+        //         'gender' => $request->input('gender') ?: null,
+        //         'identity_type' => $request->input('identityType') ?: null,
+        //         'nid_number' => $request->input('nid-number') ?: null,
+        //         'bid_number' => $request->input('bid-number') ?: null,
+        //         'profile_photo_path' => null,
+        //         'covid_certificate_path' => null,
+        //         'description' => $request->input('description') ?: null,
+        //         'status' => 'draft',
+        //     ];
+        //     // Handle file uploads if present
+        //     if ($request->hasFile('profile-photo')) {
+        //         $file = $request->file('profile-photo');
+        //         $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
+        //         $file->storeAs('public/uploads', $filename);
+        //         $fields['profile_photo_path'] = 'storage/uploads/' . $filename;
+        //         Upload::create(['filename' => $filename, 'type' => 'profile']);
+        //     }
+        //     if ($request->hasFile('covid-certificate')) {
+        //         $file = $request->file('covid-certificate');
+        //         $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
+        //         $file->storeAs('public/uploads', $filename);
+        //         $fields['covid_certificate_path'] = 'storage/uploads/' . $filename;
+        //         Upload::create(['filename' => $filename, 'type' => 'covid']);
+        //     }
+        //     $personal = PersonalInfo::create($fields);
+        //     return response()->json(['success' => 'Draft saved successfully!', 'draft' => true]);
+        // }
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -214,6 +218,17 @@ class UploadController extends Controller
             'covid_certificate_path' => $covidCertificatePath,
             'description' => $request->input('description'),
         ]);
+
+        // Set form status to submitted after successful submission
+        // if ($user && !$isDraft) {
+        //     \App\Models\Form::updateOrCreate(
+        //         ['user_id' => $user->id],
+        //         [
+        //             'applicant_name' => $applicantName,
+        //             'status' => 0
+        //         ]
+        //     );
+        // }
 
         // Store Academic Info
         foreach ($academic as $row) {
