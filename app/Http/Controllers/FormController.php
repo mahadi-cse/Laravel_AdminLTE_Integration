@@ -164,14 +164,14 @@ class FormController extends Controller
     // Retrieve the latest personal info
     $personalInfo = \App\Models\PersonalInfo::where('user_id', $form->user_id)->latest()->first();
 
-    // Retrieve the latest academic info
-    $academicInfo = \App\Models\AcademicInfo::where('user_id', $form->user_id)->latest()->get();
+    // Retrieve the latest academic info filtered by ref_id
+    $academicInfo = \App\Models\AcademicInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
-    // Retrieve the latest experience info
-    $experienceInfo = \App\Models\ExperienceInfo::where('user_id', $form->user_id)->latest()->get();
+    // Retrieve the latest experience info filtered by ref_id
+    $experienceInfo = \App\Models\ExperienceInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
-    // Retrieve the latest training info
-    $trainingInfo = \App\Models\TrainingInfo::where('user_id', $form->user_id)->latest()->get();
+    // Retrieve the latest training info filtered by ref_id
+    $trainingInfo = \App\Models\TrainingInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
     // Retrieve all nationalities and hobbies
     $nationalities = Nationality::all();
