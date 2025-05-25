@@ -1103,7 +1103,8 @@ $('.save-draft-btn').on('click', function (e) {
     var academicInfo = [];
     academicRows.forEach(function (row) {
         var inputs = row.querySelectorAll('input');
-        if (inputs.length === 5) {
+        var hasData = Array.from(inputs).some(input => input.value.trim() !== '');
+        if (inputs.length === 5 && hasData) {
             academicInfo.push({
                 education_level: inputs[0].value,
                 department: inputs[1].value,
@@ -1114,14 +1115,14 @@ $('.save-draft-btn').on('click', function (e) {
         }
     });
     formData.append('academic_info', JSON.stringify(academicInfo));
+
     // Collect Experience Info
     var expRows = document.querySelectorAll('#experience-table-body tr');
     var experienceInfo = [];
     expRows.forEach(function (row) {
         var inputs = row.querySelectorAll('input');
-        // Fix: Only push if at least one field is filled (not all empty)
-        // var hasData = Array.from(inputs).some(input => input.value.trim() !== '');
-        if (inputs.length === 6 ) {
+        var hasData = Array.from(inputs).some(input => input.value.trim() !== '');
+        if (inputs.length === 6 && hasData) {
             experienceInfo.push({
                 company_name: inputs[0].value,
                 designation: inputs[1].value,
@@ -1133,13 +1134,14 @@ $('.save-draft-btn').on('click', function (e) {
         }
     });
     formData.append('experience_info', JSON.stringify(experienceInfo));
+
     // Collect Training Info
     var trainRows = document.querySelectorAll('#training-table-body tr');
     var trainingInfo = [];
     trainRows.forEach(function (row) {
         var inputs = row.querySelectorAll('input');
-        // var hasData = Array.from(inputs).some(input => input.value.trim() !== '');
-        if (inputs.length === 5 ) {
+        var hasData = Array.from(inputs).some(input => input.value.trim() !== '');
+        if (inputs.length === 5 && hasData) {
             trainingInfo.push({
                 training_title: inputs[0].value,
                 institute_name: inputs[1].value,
@@ -1203,4 +1205,43 @@ if (covidInput) {
         }
     });
 }
+
+// Attach event listener for the 'remove-academic-row' button to rows fetched from the database
+document.addEventListener('DOMContentLoaded', function () {
+    const academicRows = document.getElementById('academic-rows');
+
+    // Use event delegation to handle clicks on dynamically added "Remove" buttons
+    academicRows.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-academic-row') || event.target.closest('.remove-academic-row')) {
+            const row = event.target.closest('tr');
+            if (row) {
+                academicRows.removeChild(row);
+            }
+        }
+    });
+
+    const experienceTableBody = document.getElementById('experience-table-body');
+
+    // Use event delegation to handle clicks on dynamically added "Remove" buttons in experience section
+    experienceTableBody.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-experience-row') || event.target.closest('.remove-experience-row')) {
+            const row = event.target.closest('tr');
+            if (row) {
+                experienceTableBody.removeChild(row);
+            }
+        }
+    });
+
+    const trainingTableBody = document.getElementById('training-table-body');
+
+    // Use event delegation to handle clicks on dynamically added "Remove" buttons in training section
+    trainingTableBody.addEventListener('click', function (event) {
+        if (event.target.classList.contains('remove-training-row') || event.target.closest('.remove-training-row')) {
+            const row = event.target.closest('tr');
+            if (row) {
+                trainingTableBody.removeChild(row);
+            }
+        }
+    });
+});
 

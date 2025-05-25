@@ -362,8 +362,8 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="academic-rows">
-                            <tr>
+                        <tbody id="academic-rows" >
+                            <tr >
                                 <td>
                                     <input type="text" class="form-control" placeholder="Enter Education Level">
                                 </td>
@@ -422,7 +422,7 @@
                             </tr>
                         </thead>
                         <tbody id="experience-table-body">
-                            <tr>
+                            <tr >
                                 <td>
                                     <input type="text" class="form-control" placeholder="Enter Company Name">
                                 </td>
@@ -491,7 +491,7 @@
                             </tr>
                         </thead>
                         <tbody id="training-table-body">
-                            <tr>
+                            <tr >
                                 <td>
                                     <input type="text" class="form-control" placeholder="Enter Training Title">
                                 </td>
@@ -567,6 +567,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="/js/test-form.js"></script>
     <script>
+        
         document.addEventListener("DOMContentLoaded", () => {
             // Populate personal info fields
             document.getElementById('name').value = @json($personalInfo->name ?? '');
@@ -589,6 +590,11 @@
                     <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
                     <td><input type="text" class="form-control" value="${row.passing_year}" placeholder="Enter Passing Year"></td>
                     <td><input type="number" class="form-control" value="${row.cgpa}" placeholder="Enter CGPA"></td>
+                    <td class="text-center">
+        <button type="button" class="btn btn-danger remove-academic-row">
+            <i class="fas fa-minus"></i>
+        </button>
+    </td>
                 </tr>`;
                 academicTableBody.insertAdjacentHTML('beforeend', newRow);
             });
@@ -604,6 +610,11 @@
                     <td><input type="text" class="form-control" value="${row.start_date}" placeholder="Start Date"></td>
                     <td><input type="text" class="form-control" value="${row.end_date}" placeholder="End Date"></td>
                     <td><input type="number" class="form-control" value="${row.total_years}" placeholder="Years"></td>
+                     <td class="text-center">
+        <button type="button" class="btn btn-danger remove-experience-row">
+            <i class="fas fa-minus"></i>
+        </button>
+    </td>
                 </tr>`;
                 experienceTableBody.insertAdjacentHTML('beforeend', newRow);
             });
@@ -618,6 +629,11 @@
                     <td><input type="number" class="form-control" value="${row.duration}" placeholder="Enter Duration"></td>
                     <td><input type="text" class="form-control" value="${row.training_year}" placeholder="Enter Training Year"></td>
                     <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
+                     <td class="text-center">
+        <button type="button" class="btn btn-danger remove-training-row">
+            <i class="fas fa-minus"></i>
+        </button>
+    </td>
                 </tr>`;
                 trainingTableBody.insertAdjacentHTML('beforeend', newRow);
             });
@@ -676,6 +692,9 @@
                 document.getElementById('bid-input-group').classList.remove('d-none');
             }
         });
+
+        
+
     </script>
 </body>
 
