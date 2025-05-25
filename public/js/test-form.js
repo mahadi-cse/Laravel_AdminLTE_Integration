@@ -1,27 +1,26 @@
 $(document).ready(function () {
-    // Fetch nationalities via AJAX
-    $.ajax({
-        url: '/nationalities',
-        method: 'GET',
-        success: function (data) {
-            var select = $('#nationality');
-            select.empty();
-            select.append('<option value="" disabled selected>Select your nationality</option>');
-            data.forEach(function (item) {
-                select.append('<option value="' + item.name + '">' + item.name + '</option>');
-            });
-            select.trigger('change');
-        }
-    });
+    // Fetch nationalities via Select2 AJAX
     $('#nationality').select2({
         placeholder: 'Select your nationality',
         allowClear: true,
-        width: '100%'
+        width: '100%',
+        ajax: {
+            url: '/nationalities',
+            dataType: 'json',
+            data: function (params) {
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
     });
     // Remove manual AJAX for hobbies, use only Select2 AJAX for hobby
     $('#hobby').select2({
         placeholder: 'Select your hobby',
-
         allowClear: true,
         width: '100%',
         ajax: {

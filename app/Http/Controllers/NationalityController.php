@@ -7,9 +7,21 @@ use Illuminate\Http\Request;
 
 class NationalityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $nationalities = Nationality::orderBy('name')->get();
-        return response()->json($nationalities);
+        $search = $request->input('q');
+        $query = Nationality::query();
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+        $nationalities = $query->orderBy('name')->limit(20)->get(['id', 'name']);
+        return response()->json([
+            'results' => $nationalities->map(function ($nationality) {
+                return [
+                    'id' => $nationality->id,
+                    'text' => $nationality->name,
+                ];
+            }),
+        ]);
     }
 }

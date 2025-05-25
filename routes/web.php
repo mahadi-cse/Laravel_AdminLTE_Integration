@@ -8,7 +8,7 @@ use App\Http\Controllers\HobbyController;
 use App\Http\Controllers\FormController;
 
 Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
-Route::get('/forms/{id}/edit', fn($id) => "Edit Form ID: $id")->name('forms.edit'); 
+Route::get('/forms/{id}/edit', [FormController::class, 'edit'])->name('forms.edit'); 
 
 
 // Override registration

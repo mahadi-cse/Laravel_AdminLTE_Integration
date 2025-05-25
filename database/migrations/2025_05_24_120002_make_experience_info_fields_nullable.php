@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('company_name')->nullable()->change();
             $table->string('designation')->nullable()->change();
             $table->string('location')->nullable()->change();
-            $table->date('start_date')->nullable()->change();
-            $table->date('end_date')->nullable()->change();
+            $table->string('start_date')->nullable()->change();
+            $table->string('end_date')->nullable()->change();
             $table->string('total_years')->nullable()->change();
         });
     }

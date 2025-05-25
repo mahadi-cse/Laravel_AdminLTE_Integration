@@ -14,9 +14,9 @@ return new class extends Migration
             $table->string('company_name')->nullable()->change();
             $table->string('designation')->nullable()->change();
             $table->string('location')->nullable()->change();
-            $table->date('start_date')->nullable()->change();
-            $table->date('end_date')->nullable()->change();
-            $table->decimal('total_years', 4, 2)->nullable()->change();
+            $table->string('start_date')->nullable()->change();
+            $table->string('end_date')->nullable()->change();
+            $table->string('total_years')->nullable()->change();
         });
         Schema::table('training_info', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();

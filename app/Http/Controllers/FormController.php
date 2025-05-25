@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Form;
 use Yajra\DataTables\DataTables;
-
+use App\Models\Nationality;
+use App\Models\Hobby;
 
 class FormController extends Controller
 {
@@ -126,12 +127,12 @@ class FormController extends Controller
                     \App\Models\ExperienceInfo::create([
                         'user_id' => $userId,
                         'ref_id' => $personal->id,
-                        'company_name' => $row['company_name'] ?: null,
-                        'designation' => $row['designation'] ?: null,
-                        'location' => $row['location'] ?: null,
-                        'start_date' => $row['start_date'] ?: null,
-                        'end_date' => $row['end_date'] ?: null,
-                        'total_years' => $row['total_years'] ?: null,
+                        'company_name' => $row['company_name'] ?? null,
+                        'designation' => $row['designation'] ?? null,
+                        'location' => $row['location'] ?? null,
+                        'start_date' => $row['start_date'] ?? null,
+                        'end_date' => $row['end_date'] ?? null,
+                        'total_years' => $row['total_years'] ?? null,
                     ]);
                 }
             }
@@ -155,4 +156,27 @@ class FormController extends Controller
 
         // ...existing code for full validation and submission (similar to UploadController)...
     }
+
+    public function edit($id)
+{
+    $form = Form::findOrFail($id);
+
+    // Retrieve the latest personal info
+    $personalInfo = \App\Models\PersonalInfo::where('user_id', $form->user_id)->latest()->first();
+
+    // Retrieve the latest academic info
+    $academicInfo = \App\Models\AcademicInfo::where('user_id', $form->user_id)->latest()->get();
+
+    // Retrieve the latest experience info
+    $experienceInfo = \App\Models\ExperienceInfo::where('user_id', $form->user_id)->latest()->get();
+
+    // Retrieve the latest training info
+    $trainingInfo = \App\Models\TrainingInfo::where('user_id', $form->user_id)->latest()->get();
+
+    // Retrieve all nationalities and hobbies
+    $nationalities = Nationality::all();
+    $hobbies = Hobby::all();
+
+    return view('edit', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'));
+}
 }
