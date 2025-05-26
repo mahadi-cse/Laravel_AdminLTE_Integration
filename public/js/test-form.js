@@ -1098,6 +1098,18 @@ $('.save-draft-btn').on('click', function (e) {
     var formData = new FormData(document.getElementById('multiStepForm'));
     formData.append('is_draft', '-1');
 
+    // Include profile photo if selected
+    const profilePhotoInput = document.getElementById('profile-photo');
+    if (profilePhotoInput && profilePhotoInput.files.length > 0) {
+        formData.append('profile-photo', profilePhotoInput.files[0]);
+    }
+
+    // Include COVID certificate if selected
+    const covidCertificateInput = document.getElementById('covid-certificate');
+    if (covidCertificateInput && covidCertificateInput.files.length > 0) {
+        formData.append('covid-certificate', covidCertificateInput.files[0]);
+    }
+
     // Collect Academic Info
     var academicRows = document.querySelectorAll('#academic-rows tr');
     var academicInfo = [];
@@ -1243,5 +1255,26 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+});
+
+// Populate profile photo and COVID certificate on page load
+window.addEventListener('DOMContentLoaded', () => {
+    // Profile photo preview
+    const profilePhotoPath = document.getElementById('photo-preview').getAttribute('src');
+    if (profilePhotoPath && profilePhotoPath !== '#') {
+        const previewWrapper = document.getElementById('photo-preview-wrapper');
+        previewWrapper.style.display = 'block';
+    }
+
+    // COVID certificate link
+    const covidCertificateInput = document.getElementById('covid-certificate');
+    const covidCertificatePath = covidCertificateInput.getAttribute('data-saved-path');
+    if (covidCertificatePath) {
+        const link = document.createElement('a');
+        link.href = covidCertificatePath;
+        link.textContent = 'View Uploaded Certificate';
+        link.target = '_blank';
+        covidCertificateInput.parentNode.appendChild(link);
+    }
 });
 

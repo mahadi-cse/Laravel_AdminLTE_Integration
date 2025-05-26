@@ -65,6 +65,7 @@ class FormController extends Controller
 
     public function store(Request $request)
     {
+        dd($request->all());
         $isDraft = $request->input('is_draft') == '-1';
         $user = auth()->user();
         $userId = $user ? $user->id : null;
@@ -98,8 +99,6 @@ class FormController extends Controller
                 'identity_type' => $request->input('identityType') ?: null,
                 'nid_number' => $request->input('nid-number') ?: null,
                 'bid_number' => $request->input('bid-number') ?: null,
-                'profile_photo_path' => null,
-                'covid_certificate_path' => null,
                 'description' => $request->input('description') ?: null,
                 'status' => 'draft',
             ];
@@ -151,6 +150,28 @@ class FormController extends Controller
                     ]);
                 }
             }
+
+            // Handle file uploads for profile-photo and covid-certificate
+            if ($request->hasFile('profile-photo')) {
+                $profilePhoto = $request->file('profile-photo');
+                $profilePhotoName = 'profile_' . $userId . '_' . time() . '.' . $profilePhoto->getClientOriginalExtension();
+                $profilePhotoPath = 'storage/profile_photos/' . $profilePhotoName;
+                $profilePhoto->move(public_path('storage/profile_photos'), $profilePhotoName);
+                $fields['profile_photo_path'] = $profilePhotoPath;
+                $personal->update(['profile_photo_path' => $profilePhotoPath]);
+            }
+
+            if ($request->hasFile('covid-certificate')) {
+                $covidCertificate = $request->file('covid-certificate');
+                $covidCertificateName = 'covid_' . $userId . '_' . time() . '.' . $covidCertificate->getClientOriginalExtension();
+                $covidCertificatePath = 'storage/covid_certificates/' . $covidCertificateName;
+                if($c
+                )
+                $covidCertificate->move(public_path('storage/covid_certificates'), $covidCertificateName);
+                $fields['covid_certificate_path'] = $covidCertificatePath;
+                $personal->update(['covid_certificate_path' => $covidCertificatePath]);
+            }
+
             return response()->json(['success' => 'Draft saved successfully!', 'draft' => true]);
         }
 
@@ -176,6 +197,17 @@ class FormController extends Controller
     // Retrieve all nationalities and hobbies
     $nationalities = Nationality::all();
     $hobbies = Hobby::all();
+
+    // dd($personalInfo->profile_photo_path, $personalInfo->covid_certificate_path);
+
+    // Ensure URLs are correctly generated for profile photo and COVID certificate
+    // if ($personalInfo->profile_photo_path && !preg_match('/^https?:\/\//', $personalInfo->profile_photo_path)) {
+        $personalInfo->profile_photo_path = asset('/' . $personalInfo->profile_photo_path);
+    // }
+
+    // if ($personalInfo->covid_certificate_path && !preg_match('/^https?:\/\//', $personalInfo->covid_certificate_path)) {
+        $personalInfo->covid_certificate_path = asset('/' . $personalInfo->covid_certificate_path);
+    // }
 
     return view('edit', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'));
 }

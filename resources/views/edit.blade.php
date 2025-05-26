@@ -159,7 +159,7 @@
         </nav>
 
         <!-- Multi-Step Form -->
-        <form id="multiStepForm">
+        <form id="multiStepForm" enctype="multipart/form-data">
 
             <!-- STEP 1 -->
             <div class="step-content active row g-3" data-step="1">
@@ -178,9 +178,11 @@
 
                         <!-- Image Preview to the right of the input -->
                         <div id="photo-preview-wrapper" style="display:none;">
-                            <img id="photo-preview" src="#" alt="Preview" class="rounded border"
-                                style="max-width: 120px; max-height: 120px;" />
+                            <img id="photo-preview" src="{{$personalInfo->profile_photo_path ?? " "}}" alt="Preview" class="rounded border"
+                                style="max-width: 120px; max-height: 120px;"/>
                         </div>
+                        <!-- <p>{{$personalInfo->profile_photo_path ?? " "}}</p>
+                        <p>{{$personalInfo->name ?? ''}}</p> -->
                     </div>
                 </div>
 
@@ -188,15 +190,15 @@
                 <!-- Name -->
                 <div class="col-md-6">
                     <label for="name" class="form-label">Name<span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="name" name="name" required
-                        placeholder="Enter your Name">
+                    <input type="text" class="form-control" id="name" name="name"
+                        placeholder="Enter your Name" value="{{$personalInfo->name ?? ''}}" required>
                 </div>
 
                 <!-- Father Name -->
                 <div class="col-md-6">
                     <label for="father-name" class="form-label">Father Name <span class="text-danger">*</span></label>
-                    <input type="text" placeholder="Enter your Father name" class="form-control" id="father-name"
-                        name="father-name" required>
+                    <input type="text" class="form-control" id="father-name" name="father-name"
+                        placeholder="Enter your Father Name" value="{{$personalInfo->father_name ?? ''}}" required>
                 </div>
 
 
@@ -331,6 +333,8 @@
                     <label for="covid-certificate" class="form-label">Covid Certificate</label>
                     <input type="file" class="form-control" id="covid-certificate" name="covid-certificate" 
                         accept=".pdf,application/pdf">
+                        <!-- <p>{{$personalInfo->covid_certificate_path}}</p> -->
+                        <a href="{{$personalInfo->covid_certificate_path}}">View Your Certificate</a>
                 </div>
 
                 <div class="col-12">
@@ -570,8 +574,8 @@
         
         document.addEventListener("DOMContentLoaded", () => {
             // Populate personal info fields
-            document.getElementById('name').value = @json($personalInfo->name ?? '');
-            document.getElementById('father-name').value = @json($personalInfo->father_name ?? '');
+            // document.getElementById('name').value = @json($personalInfo->name ?? '');
+            // document.getElementById('father-name').value = @json($personalInfo->father_name ?? '');
             document.getElementById('mother-name').value = @json($personalInfo->mother_name ?? '');
             document.getElementById('phone-number').value = @json($personalInfo->phone_number ?? '');
             document.getElementById('email').value = @json($personalInfo->email ?? '');
@@ -696,6 +700,9 @@
         
 
     </script>
+    <script>
+   
+</script>
 </body>
 
 </html>
