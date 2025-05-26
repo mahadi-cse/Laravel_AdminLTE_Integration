@@ -186,7 +186,7 @@
                                     class="rounded border" style="max-width: 120px; max-height: 120px;" />
                             </div>
                             <!-- <p>{{$personalInfo->profile_photo_path ?? " "}}</p>
-                            <p>{{$personalInfo->name ?? ''}}</p> -->
+                                                        <p>{{$personalInfo->name ?? ''}}</p> -->
                         </div>
                     </div>
 
@@ -407,9 +407,9 @@
                         <div id="cgpa-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                     </div>
                     <div class="button_container" style="
-                        display: flex;
-                        justify-content: space-between;
-                        width: 100%;">
+                                                    display: flex;
+                                                    justify-content: space-between;
+                                                    width: 100%;">
                         <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                         <div>
                             <button class="btn btn-primary prev-btn" type="button">Previous</button>
@@ -478,9 +478,9 @@
                         </div>
                     </div>
                     <div class="button_container" style="
-                        display: flex;
-                        justify-content: space-between;
-                        width: 100%;">
+                                                    display: flex;
+                                                    justify-content: space-between;
+                                                    width: 100%;">
                         <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                         <div>
                             <button class="btn btn-primary prev-btn" type="button">Previous</button>
@@ -536,9 +536,9 @@
                         </table>
                     </div>
                     <div class="button_container" style="
-                        display: flex;
-                        justify-content: space-between;
-                        width: 100%;">
+                                                    display: flex;
+                                                    justify-content: space-between;
+                                                    width: 100%;">
                         <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                         <div>
                             <button class="btn btn-primary prev-btn" type="button">Previous</button>
@@ -589,24 +589,24 @@
                 const academicTableBody = document.getElementById('academic-rows');
                 academicRows.forEach(row => {
                     const newRow = `<tr>
-                        <td><input type="text" class="form-control" value="${row.education_level}" placeholder="Enter Education Level"></td>
-                        <td><input type="text" class="form-control" value="${row.department}" placeholder="Enter Department"></td>
-                        <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
-                        <td>
-                        <div class="input-group">
-                        <input type="text" class="form-control" value="${row.passing_year}" placeholder="Enter Passing Year">
-                          <span class="input-group-text psIcon" style="cursor: pointer;">
-                    <i class="bi bi-calendar"></i>
-                </span>
-                </div>
-                </td>
-                        <td><input type="number" class="form-control" value="${row.cgpa}" placeholder="Enter CGPA"></td>
-                        <td class="text-center">
-            <button type="button" class="btn btn-danger remove-academic-row">
-                <i class="fas fa-minus"></i>
-            </button>
-        </td>
-                    </tr>`;
+                                                    <td><input type="text" class="form-control" value="${row.education_level}" placeholder="Enter Education Level"></td>
+                                                    <td><input type="text" class="form-control" value="${row.department}" placeholder="Enter Department"></td>
+                                                    <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control passing-year" value="${row.passing_year}" placeholder="Enter Passing Year">
+                                                            <span class="input-group-text psIcon" style="cursor: pointer;">
+                                                                <i class="bi bi-calendar"></i>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td><input type="number" class="form-control" value="${row.cgpa}" placeholder="Enter CGPA"></td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-danger remove-academic-row">
+                                                            <i class="fas fa-minus"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>`;
                     academicTableBody.insertAdjacentHTML('beforeend', newRow);
                 });
 
@@ -618,16 +618,55 @@
                         <td><input type="text" class="form-control" value="${row.company_name}" placeholder="Enter Company Name"></td>
                         <td><input type="text" class="form-control" value="${row.designation}" placeholder="Enter Designation"></td>
                         <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
-                        <td><input type="text" class="form-control" value="${row.start_date}" placeholder="Start Date"></td>
-                        <td><input type="text" class="form-control" value="${row.end_date}" placeholder="End Date"></td>
-                        <td><input type="number" class="form-control" value="${row.total_years}" placeholder="Years"></td>
-                         <td class="text-center">
-            <button type="button" class="btn btn-danger remove-experience-row">
-                <i class="fas fa-minus"></i>
-            </button>
-        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off" value="${row.start_date}">
+                                <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off" value="${row.end_date}">
+                                <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                    <i class="bi bi-calendar"></i>
+                                </span>
+                            </div>
+                        </td>
+                        <td><input type="number" class="form-control total-years" placeholder="Years" readonly value="${row.total_years}"></td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-danger remove-experience-row">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </td>
                     </tr>`;
+                    const row_element = $(newRow)[0];
                     experienceTableBody.insertAdjacentHTML('beforeend', newRow);
+                    
+                    // Initialize datepicker for this row
+                    const lastRow = experienceTableBody.lastElementChild;
+                    const startDate = lastRow.querySelector('.start-date');
+                    const endDate = lastRow.querySelector('.end-date');
+                    
+                    $(startDate).datepicker({
+                        dateFormat: "yy-mm-dd",
+                        changeMonth: true,
+                        changeYear: true,
+                        yearRange: "1950:2025",
+                        maxDate: 0
+                    });
+
+                    $(endDate).datepicker({
+                        dateFormat: "yy-mm-dd",
+                        changeMonth: true,
+                        changeYear: true,
+                        yearRange: "1950:2025",
+                        maxDate: 0
+                    });
+
+                    // Set up the year calculation for this row
+                    setupDateListeners(lastRow);
                 });
 
                 // Populate training info
@@ -635,17 +674,24 @@
                 const trainingTableBody = document.getElementById('training-table-body');
                 trainingRows.forEach(row => {
                     const newRow = `<tr>
-                        <td><input type="text" class="form-control" value="${row.training_title}" placeholder="Enter Training Title"></td>
-                        <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
-                        <td><input type="number" class="form-control" value="${row.duration}" placeholder="Enter Duration"></td>
-                        <td><input type="text" class="form-control" value="${row.training_year}" placeholder="Enter Training Year"></td>
-                        <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
-                         <td class="text-center">
-            <button type="button" class="btn btn-danger remove-training-row">
-                <i class="fas fa-minus"></i>
-            </button>
-        </td>
-                    </tr>`;
+                                                    <td><input type="text" class="form-control" value="${row.training_title}" placeholder="Enter Training Title"></td>
+                                                    <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
+                                                    <td><input type="number" class="form-control" value="${row.duration}" placeholder="Enter Duration"></td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                    <input type="text" class="form-control training-year" value="${row.training_year}" placeholder="Enter Training Year">
+                                                    <span class="input-group-text tyIcon" style="cursor: pointer;">
+                                                                <i class="bi bi-calendar"></i>
+                                                            </span>
+                                                    </div>
+                                                    </td>
+                                                    <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
+                                                     <td class="text-center">
+                                        <button type="button" class="btn btn-danger remove-training-row">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </td>
+                                                </tr>`;
                     trainingTableBody.insertAdjacentHTML('beforeend', newRow);
                 });
 
@@ -702,8 +748,216 @@
                     bidInput.value = @json($personalInfo->bid_number ?? '');
                     document.getElementById('bid-input-group').classList.remove('d-none');
                 }
+
+                // Initialize datepicker for existing and dynamically added passing year fields
+                $(".passing-year, .training-year").datepicker({
+                    dateFormat: "yy",
+                    changeYear: true,
+                    yearRange: "1950:2025",
+                    maxDate: 0,
+                    showButtonPanel: true,
+                    beforeShow: function (input, inst) {
+                        setTimeout(function () {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                            $('.ui-datepicker-close').off('click').on('click', function () {
+                                var year = $(input).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                                $(input).val(year);
+                                $(input).datepicker('hide');
+                            });
+                        }, 1);
+                    },
+                    onChangeMonthYear: function (year, month, inst) {
+                        setTimeout(function () {
+                            $(inst.dpDiv).find('.ui-datepicker-month').hide();
+                            $(inst.dpDiv).find('.ui-datepicker-calendar').hide();
+                        }, 1);
+                    },
+                    onClose: function (dateText, inst) {
+                        var year = $(this).datepicker('widget').find('.ui-datepicker-year :selected').val();
+                        if (year) $(this).val(year);
+                    }
+                });
+
+
             });
 
+            $(function () {
+                function calculateYearsAndMonths() {
+                    const start = new Date($('#start-date').val());
+                    const end = new Date($('#end-date').val());
+
+                    if (!isNaN(start) && !isNaN(end) && end >= start) {
+                        // Calculate difference in milliseconds
+                        const diffTime = end - start;
+
+                        // Calculate total years (decimal)
+                        const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+                        $('#total-years').val(diffYears.toFixed(1));
+
+                        // Calculate full months
+                        let months;
+                        months = (end.getFullYear() - start.getFullYear()) * 12;
+                        months -= start.getMonth();
+                        months += end.getMonth();
+
+                        // Adjust for days in partial month
+                        if (end.getDate() < start.getDate()) {
+                            months -= 1;
+                        }
+
+                        $('#total-months').val(months);
+                    } else {
+                        $('#total-years').val('');
+                        $('#total-months').val('');
+                    }
+                }
+
+                $("#start-date, #end-date").datepicker({
+                    dateFormat: "yy-mm-dd",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1950:2050",
+                    onSelect: calculateYearsAndMonths
+                });
+
+                $('#start-date, #end-date').on('change', calculateYearsAndMonths);
+            });
+
+            // Experience date input event: hide error on change if fixed
+            document.addEventListener('change', function (e) {
+                if (e.target && (e.target.classList.contains('start-date') || e.target.classList.contains('end-date'))) {
+                    validateExperienceDates();
+                }
+            });
+
+            // Experience date validation (end date >= start date)
+            function validateExperienceDates() {
+                let hasError = false;
+                let errorMsg = '';
+                let rows = document.querySelectorAll('#experience-table-body tr');
+                rows.forEach(function (row) {
+                    let start = row.querySelector('.start-date');
+                    let end = row.querySelector('.end-date');
+                    if (start && end && start.value && end.value) {
+                        let startDate = new Date(start.value);
+                        let endDate = new Date(end.value);
+                        if (endDate < startDate) {
+                            hasError = true;
+                        }
+                    }
+                });
+                const expError = document.getElementById('experience-date-error');
+                if (hasError) {
+                    expError.textContent = 'End date cannot be before start date.';
+                    expError.style.display = 'block';
+                } else {
+                    expError.textContent = '';
+                    expError.style.display = 'none';
+                }
+                return !hasError;
+            }
+
+            // Function to setup date change listeners for a row
+            function setupDateListeners(row) {
+                const startDateInput = row.querySelector('.start-date');
+                const endDateInput = row.querySelector('.end-date');
+                const yearsInput = row.querySelector('.total-years');
+
+                function updateYears() {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+                    if (!isNaN(startDate) && !isNaN(endDate) && endDate >= startDate) {
+                        const diffTime = endDate - startDate;
+                        const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25); // includes leap years
+                        yearsInput.value = diffYears.toFixed(1); // 1 decimal precision
+                    } else {
+                        yearsInput.value = '';
+                    }
+                }
+
+                // Listen to both 'input' and 'change' events for manual typing and datepicker
+                startDateInput.addEventListener('input', updateYears);
+                endDateInput.addEventListener('input', updateYears);
+                startDateInput.addEventListener('change', updateYears);
+                endDateInput.addEventListener('change', updateYears);
+
+                // Also trigger calculation when date is picked via datepicker
+                $(startDateInput).datepicker('option', 'onSelect', function () { updateYears(); });
+                $(endDateInput).datepicker('option', 'onSelect', function () { updateYears(); });
+            }
+
+            // Add datepicker to new row
+            $(newRow).find('.start-date, .end-date').datepicker({
+                dateFormat: "yy-mm-dd",
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "1950:2025",
+                maxDate: 0
+            });
+
+            // Add date change listeners to calculate duration for this row only
+            setupDateListeners(newRow);
+
+            // Function to add new experience row
+            function addExperienceRow() {
+                const experienceTableBody = document.getElementById('experience-table-body');
+                const newRow = `<tr>
+                    <td><input type="text" class="form-control" placeholder="Enter Company Name"></td>
+                    <td><input type="text" class="form-control" placeholder="Enter Designation"></td>
+                    <td><input type="text" class="form-control" placeholder="Enter Location"></td>
+                    <td>
+                        <div class="input-group">
+                            <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off">
+                            <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                <i class="bi bi-calendar"></i>
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="input-group">
+                            <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off">
+                            <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                <i class="bi bi-calendar"></i>
+                            </span>
+                        </div>
+                    </td>
+                    <td><input type="number" class="form-control total-years" placeholder="Years" readonly></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger remove-experience-row">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </td>
+                </tr>`;
+                experienceTableBody.insertAdjacentHTML('beforeend', newRow);
+
+                // Initialize datepicker for the new row
+                const lastRow = experienceTableBody.lastElementChild;
+                const startDate = lastRow.querySelector('.start-date');
+                const endDate = lastRow.querySelector('.end-date');
+
+                $(startDate).datepicker({
+                    dateFormat: "yy-mm-dd",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1950:2025",
+                    maxDate: 0
+                });
+
+                $(endDate).datepicker({
+                    dateFormat: "yy-mm-dd",
+                    changeMonth: true,
+                    changeYear: true,
+                    yearRange: "1950:2025",
+                    maxDate: 0
+                });
+
+                // Set up the year calculation for this row
+                setupDateListeners(lastRow);
+            }
+
+            // Event listener for add experience row button
+            document.querySelector('.add-experience-row').addEventListener('click', addExperienceRow);
 
 
         </script>
