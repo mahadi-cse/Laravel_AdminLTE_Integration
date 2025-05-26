@@ -85,6 +85,24 @@ class FormController extends Controller
     }
 
     if ($isDraft) {
+        // Validation for draft (relaxed, but check file types/sizes and email format if present)
+        $rules = [
+            'email' => ['nullable', 'email'],
+            'profile-photo' => ['nullable', 'image', 'max:2048'], // max 2MB
+            'covid-certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'], // max 2MB
+        ];
+        $messages = [
+            'email.email' => 'Please provide a valid email address.',
+            'profile-photo.image' => 'Profile photo must be an image file.',
+            'profile-photo.max' => 'Profile photo must be less than 2MB.',
+            'covid-certificate.mimes' => 'COVID certificate must be a PDF file.',
+            'covid-certificate.max' => 'COVID certificate must be less than 2MB.',
+        ];
+        $validator = \Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         // Save or update personal info
         $personal = PersonalInfo::updateOrCreate(
             ['user_id' => $userId],
@@ -176,7 +194,7 @@ class FormController extends Controller
             $personal->update(['covid_certificate_path' => $covidCertificatePath]);
         }
 
-        return response()->json(['success' => 'Draft saved successfully!', 'draft' => true]);
+        return response()->json(['success' => 'Draft saved successfully!', 'draft' => true, 'redirect' => route('forms.index')]);
     }
 
     // Handle full submission logic here...
@@ -189,16 +207,16 @@ class FormController extends Controller
         $form = Form::findOrFail($id);
 
         // Retrieve the latest personal info
-        $personalInfo = \App\Models\PersonalInfo::where('user_id', $form->user_id)->latest()->first();
+        $personalInfo = PersonalInfo::where('user_id', $form->user_id)->latest()->first();
 
         // Retrieve the latest academic info filtered by ref_id
-        $academicInfo = \App\Models\AcademicInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $academicInfo = AcademicInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
         // Retrieve the latest experience info filtered by ref_id
-        $experienceInfo = \App\Models\ExperienceInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $experienceInfo = ExperienceInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
         // Retrieve the latest training info filtered by ref_id
-        $trainingInfo = \App\Models\TrainingInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $trainingInfo = TrainingInfo::where('ref_id', $personalInfo->id)->latest()->get();
 
         // Retrieve all nationalities and hobbies
         $nationalities = Nationality::all();

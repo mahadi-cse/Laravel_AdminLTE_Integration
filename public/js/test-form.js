@@ -1165,7 +1165,7 @@ $('.save-draft-btn').on('click', function (e) {
     });
     formData.append('training_info', JSON.stringify(trainingInfo));
 
-    $.ajax({
+     $.ajax({
         url: '/forms',
         method: 'POST',
         data: formData,
@@ -1175,15 +1175,36 @@ $('.save-draft-btn').on('click', function (e) {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function (response) {
-            alert('Draft saved!');
+          if (response.success) {
+                
+                // alert('Draft saved! Redirecting to the next step...');
+                toastr.success(response.success);
+                setTimeout(function () {
+                    window.location.href = response.redirect;
+                }, 2000);
+                // window.location.href = response.redirect;
+            } else {
+                alert('Draft saved!');
+            }
         },
         error: function (xhr) {
+            let errorDiv = document.getElementById('backend-errors');
             if (xhr.responseJSON && xhr.responseJSON.errors) {
-                $('#backend-errors').removeClass('d-none').html(Object.values(xhr.responseJSON.errors).join('<br>'));
+                let html = '<ul class="mb-0">';
+                Object.values(xhr.responseJSON.errors).forEach(function (msgArr) {
+                    msgArr.forEach(function (msg) {
+                        html += '<li>' + msg + '</li>';
+                    });
+                });
+                html += '</ul>';
+                errorDiv.innerHTML = html;
+                errorDiv.classList.remove('d-none');
+                // Scroll to error div so user sees the error
+                window.scrollTo({ top: errorDiv.offsetTop - 30, behavior: 'smooth' });
             } else {
-                // print the error message inside aleart 
-                console.error(xhr);
-                alert('Error saving draft.');
+                errorDiv.innerHTML = xhr.responseJSON?.message || 'Error saving draft.';
+                errorDiv.classList.remove('d-none');
+                window.scrollTo({ top: errorDiv.offsetTop - 30, behavior: 'smooth' });
             }
         }
     });
