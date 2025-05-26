@@ -1277,4 +1277,3 @@ window.addEventListener('DOMContentLoaded', () => {
         covidCertificateInput.parentNode.appendChild(link);
     }
 });
-
