@@ -25,9 +25,11 @@ return new class extends Migration
             $table->string('identity_type');
             $table->string('nid_number')->nullable();
             $table->string('bid_number')->nullable();
-            $table->string('profile_photo_path');
-            $table->string('covid_certificate_path');
+            $table->string('profile_photo_path') ->nullable();
+
+            $table->string('covid_certificate_path') ->nullable();
             $table->text('description')->nullable();
+            
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
