@@ -45,3 +45,4 @@ Route::get('/nationalities', [NationalityController::class, 'index'])->name('nat
 Route::post('/upload', [UploadController::class, 'store'])->name('upload.store');
 Route::get('/hobbies', [HobbyController::class, 'index'])->name('hobbies.index');
 Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
+Route::get('/forms/{id}/download-pdf', [FormController::class, 'downloadPdf'])->name('forms.downloadPdf');

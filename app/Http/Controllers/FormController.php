@@ -242,4 +242,25 @@ class FormController extends Controller
         $personalInfo->covid_certificate_path = asset('/' . $personalInfo->covid_certificate_path);
         return view('show', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'));
     }
+
+    public function downloadPdf($id)
+    {
+        $form = Form::findOrFail($id);
+        $personalInfo = PersonalInfo::where('user_id', $form->user_id)->latest()->first();
+        $academicInfo = AcademicInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $experienceInfo = ExperienceInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $trainingInfo = TrainingInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $nationalities = Nationality::all();
+        $hobbies = Hobby::all();
+        $personalInfo->profile_photo_path = asset('/' . $personalInfo->profile_photo_path);
+        $personalInfo->covid_certificate_path = asset('/' . $personalInfo->covid_certificate_path);
+
+        $pdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4']);
+        $html = view('pdf', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'))->render();
+        $pdf->WriteHTML($html);
+        $filename = 'application_' . $form->id . '_' . date('Ymd_His') . '.pdf';
+        return response($pdf->Output($filename, 'S'), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
 }
