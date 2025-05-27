@@ -185,18 +185,16 @@ class UploadController extends Controller
         $profilePhotoPath = null;
         $covidCertificatePath = null;
         if ($request->hasFile('profile-photo')) {
-            $file = $request->file('profile-photo');
-            $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
-            $file->storeAs('public/uploads', $filename);
-            $profilePhotoPath = 'storage/uploads/' . $filename;
-            Upload::create(['filename' => $filename, 'type' => 'profile']);
+            $profilePhoto = $request->file('profile-photo');
+            $profilePhotoName = 'profile_' . $user->id . '_' . time() . '.' . $profilePhoto->getClientOriginalExtension();
+            $profilePhotoPath = 'storage/profile_photos/' . $profilePhotoName;
+            $profilePhoto->move(public_path('storage/profile_photos'), $profilePhotoName);
         }
         if ($request->hasFile('covid-certificate')) {
-            $file = $request->file('covid-certificate');
-            $filename = Auth::user()->id . '_' . $file->getClientOriginalName();
-            $file->storeAs('public/uploads', $filename);
-            $covidCertificatePath = 'storage/uploads/' . $filename;
-            Upload::create(['filename' => $filename, 'type' => 'covid']);
+            $covidCertificate = $request->file('covid-certificate');
+            $covidCertificateName = 'covid_' . $user->id . '_' . time() . '.' . $covidCertificate->getClientOriginalExtension();
+            $covidCertificatePath = 'storage/covid_certificates/' . $covidCertificateName;
+            $covidCertificate->move(public_path('storage/covid_certificates'), $covidCertificateName);
         }
         $personal = PersonalInfo::create([
             'user_id' => $user ? $user->id : null,

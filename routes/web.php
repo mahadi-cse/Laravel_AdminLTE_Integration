@@ -8,6 +8,7 @@ use App\Http\Controllers\HobbyController;
 use App\Http\Controllers\FormController;
 
 Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
+Route ::get('/forms/{id}/open', [FormController::class, 'show'])->name('forms.show');
 Route::get('/forms/{id}/edit', [FormController::class, 'edit'])->name('forms.edit'); 
 
 

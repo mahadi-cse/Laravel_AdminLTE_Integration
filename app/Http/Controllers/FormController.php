@@ -45,11 +45,10 @@ class FormController extends Controller
                     // Same width button for both Edit/Open
                     ->addColumn('action', function ($row) {
                         $widthStyle = 'style="width: 80px; text-align: center;"'; // Set fixed width
-    
                         if ($row->status == -1) {
                             return '<a href="' . route('forms.edit', $row->id) . '" class="btn btn-warning btn-sm" ' . $widthStyle . '>Edit</a>';
                         } elseif ($row->status == 0) {
-                            return '<a href="' . route('forms.edit', $row->id) . '" class="btn btn-info btn-sm" ' . $widthStyle . '>Open</a>';
+                            return '<a href="' . route('forms.show', $row->id) . '" class="btn btn-info btn-sm" ' . $widthStyle . '>Open</a>';
                         }
                         return '';
                     })
@@ -228,5 +227,19 @@ class FormController extends Controller
         // dd($personalInfo->profile_photo_path, $personalInfo->covid_certificate_path);
 
         return view('edit', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'));
+    }
+
+    public function show($id)
+    {
+        $form = Form::findOrFail($id);
+        $personalInfo = PersonalInfo::where('user_id', $form->user_id)->latest()->first();
+        $academicInfo = AcademicInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $experienceInfo = ExperienceInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $trainingInfo = TrainingInfo::where('ref_id', $personalInfo->id)->latest()->get();
+        $nationalities = Nationality::all();
+        $hobbies = Hobby::all();
+        $personalInfo->profile_photo_path = asset('/' . $personalInfo->profile_photo_path);
+        $personalInfo->covid_certificate_path = asset('/' . $personalInfo->covid_certificate_path);
+        return view('show', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'));
     }
 }
