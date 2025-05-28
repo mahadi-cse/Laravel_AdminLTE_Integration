@@ -255,7 +255,7 @@ class FormController extends Controller
         $personalInfo->profile_photo_path = asset('/' . $personalInfo->profile_photo_path);
         $personalInfo->covid_certificate_path = asset('/' . $personalInfo->covid_certificate_path);
 
-        $pdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4']);
+        $pdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => 'A4', 'margin_left' => 5, 'margin_right' => 5]);
         $html = view('pdf', compact('form', 'personalInfo', 'academicInfo', 'experienceInfo', 'trainingInfo', 'nationalities', 'hobbies'))->render();
         $pdf->WriteHTML($html);
         $filename = 'application_' . $form->id . '_' . date('Ymd_His') . '.pdf';
