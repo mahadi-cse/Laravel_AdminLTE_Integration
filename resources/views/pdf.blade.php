@@ -25,7 +25,7 @@
             </tr>
         @endif
         <tr>
-            <td class="label">Applicant's Name (English)</td><td>: {{ $personalInfo->name }}</td>
+            <td class="label">Applicant's Name  </td><td>: {{ $personalInfo->name }}</td>
             <td class="label">Father's Name</td><td>: {{ $personalInfo->father_name }}</td>
         </tr>
         <tr>

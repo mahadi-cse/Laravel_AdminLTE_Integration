@@ -22,7 +22,7 @@
                         </div>
                     @endif
                     <div class="col-12 col-md-6">
-                        <strong>Applicant's Name (English):</strong> {{ $personalInfo->name }}
+                        <strong>Applicant's Name :</strong> {{ $personalInfo->name }}
                     </div>
                     <div class="col-12 col-md-6">
                         <strong>Father's Name:</strong> {{ $personalInfo->father_name }}

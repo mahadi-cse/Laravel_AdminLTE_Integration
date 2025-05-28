@@ -525,7 +525,10 @@
                     display: flex;
                     justify-content: space-between;
                     width: 100%;">
-                    <button type="button" class="btn btn-secondary">Save as Draft</button>
+                    <div>
+                        <button type="button" class="btn btn-secondary">Save as Draft</button>
+                        <button type="button" class="btn btn-info ms-2" id="previewBtn">Preview</button>
+                    </div>
                     <div>
                         <button class="btn btn-primary prev-btn" type="button">Previous</button>
                         <button class="btn btn-success" type="submit">Submit</button>
@@ -556,6 +559,26 @@
         </div>
     </div>
 
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewModalLabel">Preview Your Application</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="previewContent">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JS Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -566,7 +589,94 @@
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="/js/test-form.js"></script>
-
+    <script>
+        $(document).ready(function() {
+    $('#previewBtn').on('click', function() {
+        // Gather all form data
+        var form = $('#multiStepForm')[0];
+        var formData = new FormData(form);
+        // Helper to get value or fallback
+        function getVal(name) {
+            return formData.get(name) || '<span class="text-muted">(empty)</span>';
+        }
+        // Gender, Nationality, Hobby text
+        var gender = $('#gender option:selected').text();
+        var nationality = $('#nationality option:selected').text();
+        var hobby = $('#hobby option:selected').text();
+        // Identity
+        var identityType = $('input[name="identityType"]:checked').val();
+        var identityNumber = identityType === 'nid' ? getVal('nid-number') : (identityType === 'bid' ? getVal('bid-number') : '');
+        // Profile photo preview
+        var photoPreview = '';
+        if ($('#photo-preview').attr('src') && $('#photo-preview-wrapper').is(':visible')) {
+            photoPreview = `<img src="${$('#photo-preview').attr('src')}" style="max-width:100px;max-height:100px;" class="mb-2 rounded border" alt="Profile Photo" />`;
+        }
+        // Covid certificate file name
+        var covidFile = $('#covid-certificate')[0].files[0] ? $('#covid-certificate')[0].files[0].name : '<span class="text-muted">(none)</span>';
+        // Academic, Experience, Training tables (just show first row for demo, can be extended)
+        function tableRows(selector, colCount) {
+            var rows = '';
+            $(selector + ' tr').each(function(i, tr) {
+                var tds = $(tr).find('td');
+                if (tds.length === 0) return;
+                // Check if this is the template row (all inputs empty and has add button)
+                var isTemplate = true;
+                tds.each(function(_, td) {
+                    var input = $(td).find('input, select');
+                    if (input.length && input.val()) {
+                        isTemplate = false;
+                    }
+                });
+                if (isTemplate) return; // skip template/empty row
+                rows += '<tr>';
+                tds.each(function(_, td) {
+                    var input = $(td).find('input, select');
+                    if (input.length) {
+                        rows += `<td>${input.val() || '<span class="text-muted">(empty)</span>'}</td>`;
+                    } else {
+                        rows += `<td>${$(td).text()}</td>`;
+                    }
+                });
+                rows += '</tr>';
+            });
+            return rows || `<tr><td colspan="${colCount}" class="text-center text-muted">No data</td></tr>`;
+        }
+        // Build preview HTML
+        var html = `
+            <div class="row mb-3">
+                <div class="col-12 text-center">${photoPreview}</div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6"><strong>Name:</strong> ${getVal('name')}</div>
+                <div class="col-md-6"><strong>Father Name:</strong> ${getVal('father-name')}</div>
+                <div class="col-md-6"><strong>Mother Name:</strong> ${getVal('mother-name')}</div>
+                <div class="col-md-6"><strong>Phone Number:</strong> ${getVal('phone-number')}</div>
+                <div class="col-md-6"><strong>Email:</strong> ${getVal('email')}</div>
+                <div class="col-md-6"><strong>Present Address:</strong> ${getVal('present-address')}</div>
+                <div class="col-md-6"><strong>Permanent Address:</strong> ${getVal('permanent-address')}</div>
+                <div class="col-md-6"><strong>Nationality:</strong> ${nationality}</div>
+                <div class="col-md-6"><strong>Hobby:</strong> ${hobby}</div>
+                <div class="col-md-6"><strong>Date of Birth:</strong> ${getVal('dob')}</div>
+                <div class="col-md-6"><strong>Gender:</strong> ${gender}</div>
+                <div class="col-md-6"><strong>Identity Type:</strong> ${identityType ? identityType.toUpperCase() : '<span class=\'text-muted\'>(none)</span>'}</div>
+                <div class="col-md-6"><strong>Identity Number:</strong> ${identityNumber}</div>
+                <div class="col-md-6"><strong>Covid Certificate:</strong> ${covidFile}</div>
+                <div class="col-12"><strong>Description:</strong> ${tinymce.get('editor') ? tinymce.get('editor').getContent({format: 'text'}) : getVal('description')}</div>
+            </div>
+            <hr/>
+            <h6>Academic Information</h6>
+            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Education Level</th><th>Department</th><th>Institute Name</th><th>Passing Year</th><th>CGPA</th></tr></thead><tbody>${tableRows('#academic-rows', 5)}</tbody></table></div>
+            <h6 class="mt-3">Experience</h6>
+            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Company Name</th><th>Designation</th><th>Location</th><th>Start Date</th><th>End Date</th><th>Total Year</th></tr></thead><tbody>${tableRows('#experience-table-body', 6)}</tbody></table></div>
+            <h6 class="mt-3">Training & Certification</h6>
+            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Training Title</th><th>Institute Name</th><th>Duration</th><th>Training Year</th><th>Location</th></tr></thead><tbody>${tableRows('#training-table-body', 5)}</tbody></table></div>
+        `;
+        $('#previewContent').html(html);
+        var modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+    });
+});
+    </script>
 </body>
 
 </html>
