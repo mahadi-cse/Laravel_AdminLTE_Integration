@@ -84,22 +84,127 @@ class FormController extends Controller
     }
 
     if ($isDraft) {
-        // Validation for draft (relaxed, but check file types/sizes and email format if present)
+        // Strict validation for draft (like UploadController)
+        $user = auth()->user();
+        $personal = $user ? \App\Models\PersonalInfo::where('user_id', $user->id)->latest()->first() : null;
+        $profilePhotoExists = $personal && $personal->profile_photo_path;
+        $covidCertificateExists = $personal && $personal->covid_certificate_path;
+
         $rules = [
-            'email' => ['nullable', 'email'],
-            'profile-photo' => ['nullable', 'image', 'max:2048'], // max 2MB
-            'covid-certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'], // max 2MB
+            'name' => ['required', 'string', 'max:255'],
+            'father-name' => ['required', 'string', 'max:255'],
+            'mother-name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone-number' => ['required', 'string', 'max:20'],
+            'profile-photo' => [$profilePhotoExists ? 'nullable' : 'required', 'image', 'max:2048'],
+            'covid-certificate' => [$covidCertificateExists ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:2048'],
+            'identityType' => ['required', 'in:nid,bid'],
+            'nid-number' => ['required_if:identityType,nid', 'nullable', 'digits_between:10,17'],
+            'bid-number' => ['required_if:identityType,bid', 'nullable', 'digits_between:10,17'],
         ];
         $messages = [
-            'email.email' => 'Please provide a valid email address.',
+            'name.required' => 'Name is required.',
+            'father-name.required' => 'Father name is required.',
+            'mother-name.required' => 'Mother name is required.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'phone-number.required' => 'Phone number is required.',
+            'phone-number.max' => 'Phone number must not exceed 20 characters.',
+            'profile-photo.required' => 'Profile photo is required.',
             'profile-photo.image' => 'Profile photo must be an image file.',
-            'profile-photo.max' => 'Profile photo must be less than 2MB.',
-            'covid-certificate.mimes' => 'COVID certificate must be a PDF file.',
-            'covid-certificate.max' => 'COVID certificate must be less than 2MB.',
+            'profile-photo.max' => 'Profile photo must not exceed 2MB.',
+            'covid-certificate.required' => 'Covid certificate is required.',
+            'covid-certificate.mimes' => 'Covid certificate must be a PDF file.',
+            'covid-certificate.max' => 'Covid certificate must not exceed 2MB.',
+            'identityType.required' => 'Please select either NID or BID.',
+            'identityType.in' => 'Invalid identity type selected.',
+            'nid-number.required_if' => 'NID number is required when NID is selected.',
+            'nid-number.digits_between' => 'NID number must be between 10 and 17 digits.',
+            'bid-number.required_if' => 'BID number is required when BID is selected.',
+            'bid-number.digits_between' => 'BID number must be between 10 and 17 digits.',
         ];
         $validator = \Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Academic Info Validation
+        $academic = json_decode($request->input('academic_info'), true);
+        if (!is_array($academic) || count($academic) === 0) {
+            return response()->json(['errors' => ['academic_info' => ['At least one academic record is required.']]], 422);
+        }
+        foreach ($academic as $i => $row) {
+            $rowValidator = \Validator::make($row, [
+                'education_level' => 'required|string|max:255',
+                'department' => 'required|string|max:255',
+                'institute_name' => 'required|string|max:255',
+                'passing_year' => 'required|digits:4',
+                'cgpa' => 'required|numeric|max:5',
+            ], [
+                'education_level.required' => "Education Level is required (row ".($i+1).")",
+                'department.required' => "Department is required (row ".($i+1).")",
+                'institute_name.required' => "Institute Name is required (row ".($i+1).")",
+                'passing_year.required' => "Passing Year is required (row ".($i+1).")",
+                'passing_year.digits' => "Passing Year must be 4 digits (row ".($i+1).")",
+                'cgpa.required' => "CGPA is required (row ".($i+1).")",
+                'cgpa.numeric' => "CGPA must be a number (row ".($i+1).")",
+                'cgpa.max' => "CGPA must be less than or equal to 5 (row ".($i+1).")",
+            ]);
+            if ($rowValidator->fails()) {
+                return response()->json(['errors' => $rowValidator->errors()], 422);
+            }
+        }
+
+        // Experience Info Validation
+        $experience = json_decode($request->input('experience_info'), true);
+        if (!is_array($experience) || count($experience) === 0) {
+            return response()->json(['errors' => ['experience_info' => ['At least one experience record is required.']]], 422);
+        }
+        foreach ($experience as $i => $row) {
+            $rowValidator = \Validator::make($row, [
+                'company_name' => 'required|string|max:255',
+                'designation' => 'required|string|max:255',
+                'location' => 'required|string|max:255',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+            ], [
+                'company_name.required' => "Company Name is required (row ".($i+1).")",
+                'designation.required' => "Designation is required (row ".($i+1).")",
+                'location.required' => "Location is required (row ".($i+1).")",
+                'start_date.required' => "Start Date is required (row ".($i+1).")",
+                'start_date.date' => "Start Date must be a valid date (row ".($i+1).")",
+                'end_date.required' => "End Date is required (row ".($i+1).")",
+                'end_date.date' => "End Date must be a valid date (row ".($i+1).")",
+                'end_date.after_or_equal' => "End Date must be after or equal to Start Date (row ".($i+1).")",
+            ]);
+            if ($rowValidator->fails()) {
+                return response()->json(['errors' => $rowValidator->errors()], 422);
+            }
+        }
+
+        // Training Info Validation
+        $training = json_decode($request->input('training_info'), true);
+        if (!is_array($training) || count($training) === 0) {
+            return response()->json(['errors' => ['training_info' => ['At least one training record is required.']]], 422);
+        }
+        foreach ($training as $i => $row) {
+            $rowValidator = \Validator::make($row, [
+                'training_title' => 'required|string|max:255',
+                'institute_name' => 'required|string|max:255',
+                'duration' => 'required|string|max:255',
+                'training_year' => 'required|digits:4',
+                'location' => 'required|string|max:255',
+            ], [
+                'training_title.required' => "Training Title is required (row ".($i+1).")",
+                'institute_name.required' => "Institute Name is required (row ".($i+1).")",
+                'duration.required' => "Duration is required (row ".($i+1).")",
+                'training_year.required' => "Training Year is required (row ".($i+1).")",
+                'training_year.digits' => "Training Year must be 4 digits (row ".($i+1).")",
+                'location.required' => "Location is required (row ".($i+1).")",
+            ]);
+            if ($rowValidator->fails()) {
+                return response()->json(['errors' => $rowValidator->errors()], 422);
+            }
         }
 
         // Save or update personal info
