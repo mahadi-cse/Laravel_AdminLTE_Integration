@@ -1,10 +1,10 @@
 @extends('layouts.master')
 
-@section('content')
 @php($hideHeader = false)
 @php($hideBreadcrumb = true)
+@section('content')
 
-<div class="container mt-2"> {{-- Reduced top margin from mt-4 to mt-2 --}}
+<div class="container mt-0"> {{-- Reduced top margin from mt-4 to mt-2 --}}
     <!DOCTYPE html>
     <html>
     <head>

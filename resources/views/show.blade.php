@@ -4,77 +4,75 @@
 @php($hideHeader = false)
 @php($hideBreadcrumb = true)
 
+
+
 @section('content')
     <div class="container-fluid px-2 px-md-4">
         <div class="d-flex justify-content-start mb-2">
             <a href="{{ route('forms.downloadPdf', $form->id) }}" class="btn btn-danger">
-                <i class="fas fa-file-pdf"></i> Download PDF
+                <i class="fa fa-file-pdf"></i> Download PDF
             </a>
         </div>
         <h2 class="mb-4">Application Details</h2>
         <div class="card mb-4">
             <div class="card-header"><b>Applicant Information</b></div>
             <div class="card-body">
-                <div class="row g-3">
+                <table class="table table-borderless mb-0" style="width:100%;">
+                    <tbody>
                     @if($personalInfo->profile_photo_path)
-                        <div class="col-12 text-center mb-3">
-                            <img src="{{  $personalInfo->profile_photo_path }}" style="max-width:120px; max-height:120px; border:1px solid #ccc;" alt="Profile Photo">
-                        </div>
+                        <tr>
+                            <td class="fw-bold" style="width:220px;">Profile Photo</td>
+                            <td style="width:10px;">:</td>
+                            <td colspan="2">
+                                <img src="{{ $personalInfo->profile_photo_path }}" style="max-width:120px; max-height:120px; border:1px solid #ccc;" alt="Profile Photo">
+                            </td>
+                        </tr>
                     @endif
-                    <div class="col-12 col-md-6">
-                        <strong>Applicant's Name :</strong> {{ $personalInfo->name }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Father's Name:</strong> {{ $personalInfo->father_name }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Mother's Name:</strong> {{ $personalInfo->mother_name }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Email:</strong> {{ $personalInfo->email }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Phone Number:</strong> {{ $personalInfo->phone_number }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Present Address:</strong> {{ $personalInfo->present_address }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Permanent Address:</strong> {{ $personalInfo->permanent_address }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Nationality:</strong> {{ optional($nationalities->find($personalInfo->nationality))->name }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Hobby:</strong> {{ optional($hobbies->find($personalInfo->hobby))->name }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Date of Birth:</strong> {{ $personalInfo->dob }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Gender:</strong> {{ ucfirst($personalInfo->gender) }}
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <strong>Identity Type:</strong> {{ strtoupper($personalInfo->identity_type) }}
-                    </div>
+                    <tr>
+                        <td class="fw-bold">Applicant's Name</td><td>:</td><td>{{ $personalInfo->name }}</td>
+                        <td class="fw-bold">Father's Name</td><td>:</td><td>{{ $personalInfo->father_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Mother's Name</td><td>:</td><td>{{ $personalInfo->mother_name }}</td>
+                        <td class="fw-bold">Email</td><td>:</td><td>{{ $personalInfo->email }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Phone Number</td><td>:</td><td>{{ $personalInfo->phone_number }}</td>
+                        <td class="fw-bold">Present Address</td><td>:</td><td>{{ $personalInfo->present_address }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Permanent Address</td><td>:</td><td>{{ $personalInfo->permanent_address }}</td>
+                        <td class="fw-bold">Nationality</td><td>:</td><td>{{ optional($nationalities->find($personalInfo->nationality))->name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Hobby</td><td>:</td><td>{{ optional($hobbies->find($personalInfo->hobby))->name }}</td>
+                        <td class="fw-bold">Date of Birth</td><td>:</td><td>{{ $personalInfo->dob }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Gender</td><td>:</td><td>{{ ucfirst($personalInfo->gender) }}</td>
+                        <td class="fw-bold">Identity Type</td><td>:</td><td>{{ strtoupper($personalInfo->identity_type) }}</td>
+                    </tr>
                     @if($personalInfo->identity_type === 'nid')
-                        <div class="col-12 col-md-6">
-                            <strong>NID Number:</strong> {{ $personalInfo->nid_number }}
-                        </div>
+                    <tr>
+                        <td class="fw-bold">NID Number</td><td>:</td><td>{{ $personalInfo->nid_number }}</td>
+                        <td></td><td></td><td></td>
+                    </tr>
                     @elseif($personalInfo->identity_type === 'bid')
-                        <div class="col-12 col-md-6">
-                            <strong>BID Number:</strong> {{ $personalInfo->bid_number }}
-                        </div>
+                    <tr>
+                        <td class="fw-bold">BID Number</td><td>:</td><td>{{ $personalInfo->bid_number }}</td>
+                        <td></td><td></td><td></td>
+                    </tr>
                     @endif
-                    <div class="col-12">
-                        <strong>Description:</strong> {!! nl2br(e($personalInfo->description ?? "No Description ")) !!}
-                    </div>
+                    <tr>
+                        <td class="fw-bold">Description</td><td>:</td><td colspan="4">{!! nl2br(e($personalInfo->description ?? "No Description ")) !!}</td>
+                    </tr>
                     @if($personalInfo->covid_certificate_path)
-                        <div class="col-12">
-                            <strong>Covid Certificate:</strong> <a href="{{$personalInfo->covid_certificate_path}}" target="_blank">View Covid Certificate</a>
-                        </div>
+                    <tr>
+                        <td class="fw-bold">Covid Certificate</td><td>:</td><td colspan="4"><a href="{{$personalInfo->covid_certificate_path}}" target="_blank">View Covid Certificate</a></td>
+                    </tr>
                     @endif
-                </div>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="card mb-4">

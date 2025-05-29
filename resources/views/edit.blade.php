@@ -185,7 +185,7 @@
 
                             <!-- Image Preview to the right of the input -->
                             <div id="photo-preview-wrapper" style="display:none;">
-                                <img id="photo-preview" src="{{$personalInfo->profile_photo_path ?? " "}}" alt="Preview"
+                                <img id="photo-preview" src="{{$personalInfo->profile_photo_path ?? asset('adminlte/assets/img/avatar5.png')}}" alt="Preview"
                                     class="rounded border" style="max-width: 120px; max-height: 120px;" />
                             </div>
                             <!-- <p>{{$personalInfo->profile_photo_path ?? " "}}</p>

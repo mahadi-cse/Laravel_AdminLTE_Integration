@@ -1068,8 +1068,10 @@ $('#multiStepForm').on('submit', function (e) {
         success: function (response) {
             // Show success message or redirect
             alert('Form and files uploaded successfully!');
-            location.reload(); // Reload the page
+
+            // location.reload(); // Reload the page
             // Optionally reload or redirect
+            window.location.href = response.redirect;
         },
         error: function (xhr) {
             let errorDiv = document.getElementById('backend-errors');
@@ -1176,13 +1178,12 @@ $('.save-draft-btn').on('click', function (e) {
         },
         success: function (response) {
           if (response.success) {
-                
-                // alert('Draft saved! Redirecting to the next step...');
-                toastr.success(response.success);
-                setTimeout(function () {
-                    window.location.href = response.redirect;
-                }, 2000);
-                // window.location.href = response.redirect;
+                alert('Draft saved! Redirecting to the next step...');
+                // toastr.success(response.success);
+                // setTimeout(function () {
+                //     window.location.href = response.redirect;
+                // }, 2000);
+                window.location.href = response.redirect;
             } else {
                 alert('Draft saved!');
             }

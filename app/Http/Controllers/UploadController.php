@@ -69,14 +69,20 @@ class UploadController extends Controller
         //     return response()->json(['success' => 'Draft saved successfully!', 'draft' => true]);
         // }
 
+        $user = Auth::user();
+        // Check if profile photo and covid certificate already exist for this user
+        $personal = $user ? \App\Models\PersonalInfo::where('user_id', $user->id)->latest()->first() : null;
+        $profilePhotoExists = $personal && $personal->profile_photo_path;
+        $covidCertificateExists = $personal && $personal->covid_certificate_path;
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'father-name' => ['required', 'string', 'max:255'],
             'mother-name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'phone-number' => ['required', 'string', 'max:20'],
-            'profile-photo' => ['required', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'covid-certificate' => ['required', 'mimes:pdf', 'max:2048'],
+            'profile-photo' => [$profilePhotoExists ? 'nullable' : 'required', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'covid-certificate' => [$covidCertificateExists ? 'nullable' : 'required', 'mimes:pdf', 'max:2048'],
             'identityType' => ['required', 'in:nid,bid'],
             'nid-number' => ['required_if:identityType,nid', 'nullable', 'digits_between:10,17'],
             'bid-number' => ['required_if:identityType,bid', 'nullable', 'digits_between:10,17'],
@@ -196,7 +202,8 @@ class UploadController extends Controller
             $covidCertificatePath = 'storage/covid_certificates/' . $covidCertificateName;
             $covidCertificate->move(public_path('storage/covid_certificates'), $covidCertificateName);
         }
-        $personal = PersonalInfo::create([
+        // Update if exists, else create
+        $personalData = [
             'user_id' => $user ? $user->id : null,
             'name' => $request->input('name'),
             'father_name' => $request->input('father-name'),
@@ -212,21 +219,24 @@ class UploadController extends Controller
             'identity_type' => $request->input('identityType'),
             'nid_number' => $request->input('nid-number'),
             'bid_number' => $request->input('bid-number'),
-            'profile_photo_path' => $profilePhotoPath,
-            'covid_certificate_path' => $covidCertificatePath,
             'description' => $request->input('description'),
-        ]);
+        ];
+        if ($profilePhotoPath) {
+            $personalData['profile_photo_path'] = $profilePhotoPath;
+        }
+        if ($covidCertificatePath) {
+            $personalData['covid_certificate_path'] = $covidCertificatePath;
+        }
+        if ($personal) {
+            $personal->update($personalData);
+        } else {
+            $personal = PersonalInfo::create($personalData);
+        }
 
-        // Set form status to submitted after successful submission
-        // if ($user && !$isDraft) {
-        //     \App\Models\Form::updateOrCreate(
-        //         ['user_id' => $user->id],
-        //         [
-        //             'applicant_name' => $applicantName,
-        //             'status' => 0
-        //         ]
-        //     );
-        // }
+        // Remove old related info before inserting new (prevents duplicates)
+        AcademicInfo::where('ref_id', $personal->id)->delete();
+        ExperienceInfo::where('ref_id', $personal->id)->delete();
+        TrainingInfo::where('ref_id', $personal->id)->delete();
 
         // Store Academic Info
         foreach ($academic as $row) {
@@ -266,6 +276,6 @@ class UploadController extends Controller
             ]);
         }
 
-        return response()->json(['success' => 'Form and files uploaded successfully!']);
+        return response()->json(['success' => 'Form and files uploaded successfully!', 'redirect' => route('forms.index')] );
     }
 }
