@@ -184,12 +184,15 @@
                             </div>
 
                             <!-- Image Preview to the right of the input -->
-                            <div id="photo-preview-wrapper" style="display:none;">
-                                <img id="photo-preview" src="{{$personalInfo->profile_photo_path ?? asset('adminlte/assets/img/avatar5.png')}}" alt="Preview"
-                                    class="rounded border" style="max-width: 120px; max-height: 120px;" />
-                            </div>
+
+                            @if(!empty($personalInfo->profile_photo_path) && $personalInfo->profile_photo_path !== 'http://127.0.0.1:8000/')
+                                <div id="photo-preview-wrapper" style="display:none;">
+                                    <img id="photo-preview" src="{{$personalInfo->profile_photo_path}}" alt="Preview"
+                                        class="rounded border" style="max-width: 120px; max-height: 120px;" />
+                                </div>
+                            @endif
                             <!-- <p>{{$personalInfo->profile_photo_path ?? " "}}</p>
-                                                                            <p>{{$personalInfo->name ?? ''}}</p> -->
+                                                                                                <p>{{$personalInfo->name ?? ''}}</p> -->
                         </div>
                     </div>
 
@@ -344,7 +347,10 @@
                         <input type="file" class="form-control" id="covid-certificate" name="covid-certificate"
                             accept=".pdf,application/pdf">
                         <!-- <p>{{$personalInfo->covid_certificate_path}}</p> -->
-                        <a href="{{$personalInfo->covid_certificate_path}}">View Your Certificate</a>
+                        <!-- <p>{{$personalInfo->covid_certificate_path}}</p> -->
+                        @if(!empty($personalInfo->covid_certificate_path) && $personalInfo->covid_certificate_path !== 'http://127.0.0.1:8000/')
+                            <a href="{{$personalInfo->covid_certificate_path}}">View Your Certificate</a>
+                        @endif
                     </div>
 
                     <div class="col-12">
@@ -402,9 +408,9 @@
                         <div id="cgpa-error" class="text-danger mt-1" style="display:none; font-size:0.95em;"></div>
                     </div>
                     <div class="button_container" style="
-                                                                        display: flex;
-                                                                        justify-content: space-between;
-                                                                        width: 100%;">
+                                                                                            display: flex;
+                                                                                            justify-content: space-between;
+                                                                                            width: 100%;">
                         <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                         <div>
                             <button class="btn btn-primary prev-btn" type="button">Previous</button>
@@ -473,9 +479,9 @@
                         </div>
                     </div>
                     <div class="button_container" style="
-                                                                        display: flex;
-                                                                        justify-content: space-between;
-                                                                        width: 100%;">
+                                                                                            display: flex;
+                                                                                            justify-content: space-between;
+                                                                                            width: 100%;">
                         <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                         <div>
                             <button class="btn btn-primary prev-btn" type="button">Previous</button>
@@ -531,9 +537,9 @@
                         </table>
                     </div>
                     <div class="button_container" style="
-                                                                        display: flex;
-                                                                        justify-content: space-between;
-                                                                        width: 100%;">
+                                                                                            display: flex;
+                                                                                            justify-content: space-between;
+                                                                                            width: 100%;">
                         <div>
                             <button type="button" class="btn btn-secondary save-draft-btn">Save as Draft</button>
                             <button type="button" class="btn btn-info ms-2" id="previewBtn">Preview</button>
@@ -626,8 +632,19 @@
                     if ($('#photo-preview').attr('src') && $('#photo-preview-wrapper').is(':visible')) {
                         photoPreview = `<img src="${$('#photo-preview').attr('src')}" style="max-width:100px;max-height:100px;" class="mb-2 rounded border" alt="Profile Photo" />`;
                     }
-                    // Covid certificate file name
-                    var covidFile = $('#covid-certificate')[0].files[0] ? $('#covid-certificate')[0].files[0].name : '<span class="text-muted">(none)</span>';
+                    // Covid certificate file name or link
+                    var covidFile = '';
+                    if ($('#covid-certificate')[0].files[0]) {
+                        covidFile = $('#covid-certificate')[0].files[0].name;
+                    } else {
+                        // Check if a valid covid_certificate_path exists from the backend
+                        var covidCertificatePath = @json($personalInfo->covid_certificate_path ?? '');
+                        if (covidCertificatePath && covidCertificatePath !== 'http://127.0.0.1:8000/') {
+                            covidFile = `<a href="${covidCertificatePath}" target="_blank">View Your Certificate</a>`;
+                        } else {
+                            covidFile = '<span class="text-muted">(none)</span>';
+                        }
+                    }
                     // Academic, Experience, Training tables (just show first row for demo, can be extended)
                     function tableRows(selector) {
                         var rows = '';
@@ -636,11 +653,11 @@
                             if (tds.length === 0) return;
                             // Only include row if at least one input/select has a value
                             var hasValue = false;
-                            tds.each(function (_, td) {
+                            tds.each(function (i, td) {
+                                // Skip the last td (Action column)
+                                if (i === tds.length - 1) return;
                                 var input = $(td).find('input, select');
-                                if (input.length && input.val()) {
-                                    hasValue = true;
-                                }
+                                rows += `<td>${input.length ? (input.val() || '<span class="text-muted">(empty)</span>') : $(td).text()}</td>`;
                             });
                             if (!hasValue) return; // skip empty/template row
                             rows += '<tr>';
@@ -654,34 +671,35 @@
                     }
                     // Build preview HTML
                     var html = `
-                        <div class="row mb-3">
-                            <div class="col-12 text-center">${photoPreview}</div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6"><strong>Name:</strong> ${getVal('name')}</div>
-                            <div class="col-md-6"><strong>Father Name:</strong> ${getVal('father-name')}</div>
-                            <div class="col-md-6"><strong>Mother Name:</strong> ${getVal('mother-name')}</div>
-                            <div class="col-md-6"><strong>Phone Number:</strong> ${getVal('phone-number')}</div>
-                            <div class="col-md-6"><strong>Email:</strong> ${getVal('email')}</div>
-                            <div class="col-md-6"><strong>Present Address:</strong> ${getVal('present-address')}</div>
-                            <div class="col-md-6"><strong>Permanent Address:</strong> ${getVal('permanent-address')}</div>
-                            <div class="col-md-6"><strong>Nationality:</strong> ${nationality}</div>
-                            <div class="col-md-6"><strong>Hobby:</strong> ${hobby}</div>
-                            <div class="col-md-6"><strong>Date of Birth:</strong> ${getVal('dob')}</div>
-                            <div class="col-md-6"><strong>Gender:</strong> ${gender}</div>
-                            <div class="col-md-6"><strong>Identity Type:</strong> ${identityType ? identityType.toUpperCase() : '<span class=\'text-muted\'>(none)</span>'}</div>
-                            <div class="col-md-6"><strong>Identity Number:</strong> ${identityNumber}</div>
-                            <div class="col-md-6"><strong>Covid Certificate:</strong> ${covidFile}</div>
-                            <div class="col-12"><strong>Description:</strong> ${tinymce.get('editor') ? tinymce.get('editor').getContent({ format: 'text' }) : getVal('description')}</div>
-                        </div>
-                        <hr/>
-                        <h6>Academic Information</h6>
-                        <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Education Level</th><th>Department</th><th>Institute Name</th><th>Passing Year</th><th>CGPA</th></tr></thead><tbody>${tableRows('#academic-rows')}</tbody></table></div>
-                        <h6 class="mt-3">Experience</h6>
-                        <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Company Name</th><th>Designation</th><th>Location</th><th>Start Date</th><th>End Date</th><th>Total Year</th></tr></thead><tbody>${tableRows('#experience-table-body')}</tbody></table></div>
-                        <h6 class="mt-3">Training & Certification</h6>
-                        <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Training Title</th><th>Institute Name</th><th>Duration</th><th>Training Year</th><th>Location</th></tr></thead><tbody>${tableRows('#training-table-body')}</tbody></table></div>
-                    `;
+                                            <div class="row mb-3">
+                                                  <h4 style ="color : #3366cc" >Applicant Information</h4>
+                                            </div>
+                                          
+                                            <div class="row g-3">
+                                                <div class="col-md-6"><strong>Name:</strong> ${getVal('name')}</div>
+                                                <div class="col-md-6"><strong>Father Name:</strong> ${getVal('father-name')}</div>
+                                                <div class="col-md-6"><strong>Mother Name:</strong> ${getVal('mother-name')}</div>
+                                                <div class="col-md-6"><strong>Phone Number:</strong> ${getVal('phone-number')}</div>
+                                                <div class="col-md-6"><strong>Email:</strong> ${getVal('email')}</div>
+                                                <div class="col-md-6"><strong>Present Address:</strong> ${getVal('present-address')}</div>
+                                                <div class="col-md-6"><strong>Permanent Address:</strong> ${getVal('permanent-address')}</div>
+                                                <div class="col-md-6"><strong>Nationality:</strong> ${nationality}</div>
+                                                <div class="col-md-6"><strong>Hobby:</strong> ${hobby}</div>
+                                                <div class="col-md-6"><strong>Date of Birth:</strong> ${getVal('dob')}</div>
+                                                <div class="col-md-6"><strong>Gender:</strong> ${gender}</div>
+                                                <div class="col-md-6"><strong>Identity Type:</strong> ${identityType ? identityType.toUpperCase() : '<span class=\'text-muted\'>(none)</span>'}</div>
+                                                <div class="col-md-6"><strong>Identity Number:</strong> ${identityNumber}</div>
+                                                <div class="col-md-6"><strong>Covid Certificate:</strong> ${covidFile}</div>
+                                                <div class="col-12"><strong>Description:</strong> ${tinymce.get('editor') ? tinymce.get('editor').getContent({ format: 'text' }) : getVal('description')}</div>
+                                            </div>
+                                            <hr/>
+                                            <h4 style ="color : #3366cc">Academic Information</h4>
+                                            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Education Level</th><th>Department</th><th>Institute Name</th><th>Passing Year</th><th>CGPA</th></tr></thead><tbody>${tableRows('#academic-rows')}</tbody></table></div>
+                                            <h4 class="mt-3" style ="color : #3366cc">Experience</h4>
+                                            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Company Name</th><th>Designation</th><th>Location</th><th>Start Date</th><th>End Date</th><th>Total Year</th></tr></thead><tbody>${tableRows('#experience-table-body')}</tbody></table></div>
+                                            <h4 class="mt-3" style ="color : #3366cc">Training & Certification</h4>
+                                            <div class="table-responsive"><table class="table table-bordered"><thead><tr><th>Training Title</th><th>Institute Name</th><th>Duration</th><th>Training Year</th><th>Location</th></tr></thead><tbody>${tableRows('#training-table-body')}</tbody></table></div>
+                                        `;
                     $('#previewContent').html(html);
                     var modal = new bootstrap.Modal(document.getElementById('previewModal'));
                     modal.show();
@@ -701,24 +719,24 @@
                     // Add rows from database
                     academicRows.forEach((row, index) => {
                         const newRow = `<tr>
-                                                <td><input type="text" class="form-control" value="${row.education_level}" placeholder="Enter Education Level"></td>
-                                                <td><input type="text" class="form-control" value="${row.department}" placeholder="Enter Department"></td>
-                                                <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
-                                                <td>
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control passing-year" value="${row.passing_year}" placeholder="Enter Passing Year">
-                                                        <span class="input-group-text psIcon" style="cursor: pointer;">
-                                                            <i class="bi bi-calendar"></i>
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td><input type="number" class="form-control" value="${row.cgpa}" placeholder="Enter CGPA"></td>
-                                                <td class="text-center">
-                                                    <button type="button" class="${index === 0 ? 'btn btn-primary add-academic-row' : 'btn btn-danger remove-academic-row'}">
-                                                        <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>`;
+                                                                    <td><input type="text" class="form-control" value="${row.education_level}" placeholder="Enter Education Level"></td>
+                                                                    <td><input type="text" class="form-control" value="${row.department}" placeholder="Enter Department"></td>
+                                                                    <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
+                                                                    <td>
+                                                                        <div class="input-group">
+                                                                            <input type="text" class="form-control passing-year" value="${row.passing_year}" placeholder="Enter Passing Year">
+                                                                            <span class="input-group-text psIcon" style="cursor: pointer;">
+                                                                                <i class="bi bi-calendar"></i>
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td><input type="number" class="form-control" value="${row.cgpa}" placeholder="Enter CGPA"></td>
+                                                                    <td class="text-center">
+                                                                        <button type="button" class="${index === 0 ? 'btn btn-primary add-academic-row' : 'btn btn-danger remove-academic-row'}">
+                                                                            <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>`;
                         academicTableBody.insertAdjacentHTML('beforeend', newRow);
                     });
 
@@ -733,24 +751,24 @@
 
                     // Add new row with minus button (no need to change the first row's button)
                     const newRow = `<tr>
-                                            <td><input type="text" class="form-control" placeholder="Enter Education Level"></td>
-                                            <td><input type="text" class="form-control" placeholder="Enter Department"></td>
-                                            <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
-                                                    <span class="input-group-text psIcon" style="cursor: pointer;">
-                                                        <i class="bi bi-calendar"></i>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td><input type="number" class="form-control" placeholder="Enter CGPA"></td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-danger remove-academic-row">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                            </td>
-                                        </tr>`;
+                                                                <td><input type="text" class="form-control" placeholder="Enter Education Level"></td>
+                                                                <td><input type="text" class="form-control" placeholder="Enter Department"></td>
+                                                                <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
+                                                                        <span class="input-group-text psIcon" style="cursor: pointer;">
+                                                                            <i class="bi bi-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td><input type="number" class="form-control" placeholder="Enter CGPA"></td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="btn btn-danger remove-academic-row">
+                                                                        <i class="fas fa-minus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>`;
                     academicTableBody.insertAdjacentHTML('beforeend', newRow);
 
                     // Initialize datepicker for the new row
@@ -845,32 +863,32 @@
                     experienceTableBody.innerHTML = '';
                     experienceRows.forEach((row, index) => {
                         const newRow = `<tr>
-                                            <td><input type="text" class="form-control" value="${row.company_name}" placeholder="Enter Company Name"></td>
-                                            <td><input type="text" class="form-control" value="${row.designation}" placeholder="Enter Designation"></td>
-                                            <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off" value="${row.start_date}">
-                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                        <i class="bi bi-calendar"></i>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off" value="${row.end_date}">
-                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                        <i class="bi bi-calendar"></i>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td><input type="number" class="form-control total-years" placeholder="Years" readonly value="${row.total_years}"></td>
-                                            <td class="text-center">
-                                                <button type="button" class="${index === 0 ? 'btn btn-primary add-experience-row' : 'btn btn-danger remove-experience-row'}">
-                                                    <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
-                                                </button>
-                                            </td>
-                                        </tr>`;
+                                                                <td><input type="text" class="form-control" value="${row.company_name}" placeholder="Enter Company Name"></td>
+                                                                <td><input type="text" class="form-control" value="${row.designation}" placeholder="Enter Designation"></td>
+                                                                <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off" value="${row.start_date}">
+                                                                        <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                            <i class="bi bi-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off" value="${row.end_date}">
+                                                                        <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                            <i class="bi bi-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td><input type="number" class="form-control total-years" placeholder="Years" readonly value="${row.total_years}"></td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="${index === 0 ? 'btn btn-primary add-experience-row' : 'btn btn-danger remove-experience-row'}">
+                                                                        <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>`;
                         experienceTableBody.insertAdjacentHTML('beforeend', newRow);
                     });
                 }
@@ -878,32 +896,32 @@
                 // Function to add new experience row
                 function addExperienceRow() {
                     const newRow = `<tr>
-                                            <td><input type="text" class="form-control" placeholder="Enter Company Name"></td>
-                                            <td><input type="text" class="form-control" placeholder="Enter Designation"></td>
-                                            <td><input type="text" class="form-control" placeholder="Enter Location"></td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off">
-                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                        <i class="bi bi-calendar"></i>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off">
-                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                        <i class="bi bi-calendar"></i>
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td><input type="number" class="form-control total-years" placeholder="Years" readonly></td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-danger remove-experience-row">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                            </td>
-                                        </tr>`;
+                                                                <td><input type="text" class="form-control" placeholder="Enter Company Name"></td>
+                                                                <td><input type="text" class="form-control" placeholder="Enter Designation"></td>
+                                                                <td><input type="text" class="form-control" placeholder="Enter Location"></td>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off">
+                                                                        <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                            <i class="bi bi-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off">
+                                                                        <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                            <i class="bi bi-calendar"></i>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                                <td><input type="number" class="form-control total-years" placeholder="Years" readonly></td>
+                                                                <td class="text-center">
+                                                                    <button type="button" class="btn btn-danger remove-experience-row">
+                                                                        <i class="fas fa-minus"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>`;
                     experienceTableBody.insertAdjacentHTML('beforeend', newRow);
                     // Initialize datepickers and year calculation for the new row
                     const lastRow = experienceTableBody.lastElementChild;
@@ -973,24 +991,24 @@
 
                     trainingRows.forEach((row, index) => {
                         const newRow = `<tr>
-                                <td><input type="text" class="form-control" value="${row.training_title}" placeholder="Enter Training Title"></td>
-                                <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
-                                <td><input type="number" class="form-control" value="${row.duration}" placeholder="Enter Duration"></td>
-                                <td>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control training-year" value="${row.training_year}" placeholder="Enter Training Year">
-                                        <span class="input-group-text tyIcon" style="cursor: pointer;">
-                                            <i class="bi bi-calendar"></i>
-                                        </span>
-                                    </div>
-                                </td>
-                                <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
-                                <td class="text-center">
-                                    <button type="button" class="${index === 0 ? 'btn btn-primary add-training-row' : 'btn btn-danger remove-training-row'}">
-                                        <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
-                                    </button>
-                                </td>
-                            </tr>`;
+                                                    <td><input type="text" class="form-control" value="${row.training_title}" placeholder="Enter Training Title"></td>
+                                                    <td><input type="text" class="form-control" value="${row.institute_name}" placeholder="Enter Institute Name"></td>
+                                                    <td><input type="number" class="form-control" value="${row.duration}" placeholder="Enter Duration"></td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control training-year" value="${row.training_year}" placeholder="Enter Training Year">
+                                                            <span class="input-group-text tyIcon" style="cursor: pointer;">
+                                                                <i class="bi bi-calendar"></i>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td><input type="text" class="form-control" value="${row.location}" placeholder="Enter Location"></td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="${index === 0 ? 'btn btn-primary add-training-row' : 'btn btn-danger remove-training-row'}">
+                                                            <i class="fas fa-${index === 0 ? 'plus' : 'minus'}"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>`;
                         trainingTableBody.insertAdjacentHTML('beforeend', newRow);
                     });
                 }
@@ -998,24 +1016,24 @@
                 // Function to add new training row
                 function addTrainingRow() {
                     const newRow = `<tr>
-                            <td><input type="text" class="form-control" placeholder="Enter Training Title"></td>
-                            <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
-                            <td><input type="number" class="form-control" placeholder="Enter Duration"></td>
-                            <td>
-                                <div class="input-group">
-                                    <input type="text" class="form-control training-year" placeholder="Enter Training Year" autocomplete="off">
-                                    <span class="input-group-text tyIcon" style="cursor: pointer;">
-                                        <i class="bi bi-calendar"></i>
-                                    </span>
-                                </div>
-                            </td>
-                            <td><input type="text" class="form-control" placeholder="Enter Location"></td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-danger remove-training-row">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                            </td>
-                        </tr>`;
+                                                <td><input type="text" class="form-control" placeholder="Enter Training Title"></td>
+                                                <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
+                                                <td><input type="number" class="form-control" placeholder="Enter Duration"></td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control training-year" placeholder="Enter Training Year" autocomplete="off">
+                                                        <span class="input-group-text tyIcon" style="cursor: pointer;">
+                                                            <i class="bi bi-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td><input type="text" class="form-control" placeholder="Enter Location"></td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-danger remove-training-row">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>`;
                     trainingTableBody.insertAdjacentHTML('beforeend', newRow);
 
                     const lastRow = trainingTableBody.lastElementChild;
@@ -1286,32 +1304,32 @@
             function addExperienceRow() {
                 const experienceTableBody = document.getElementById('experience-table-body');
                 const newRow = `<tr>
-                                        <td><input type="text" class="form-control" placeholder="Enter Company Name"></td>
-                                        <td><input type="text" class="form-control" placeholder="Enter Designation"></td>
-                                        <td><input type="text" class="form-control" placeholder="Enter Location"></td>
-                                        <td>
-                                            <div class="input-group">
-                                                <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off">
-                                                <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                    <i class="bi bi-calendar"></i>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="input-group">
-                                                <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off">
-                                                <span class="input-group-text calendar-icon" style="cursor: pointer;">
-                                                    <i class="bi bi-calendar"></i>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td><input type="number" class="form-control total-years" placeholder="Years" readonly></td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-danger remove-experience-row">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                        </td>
-                                    </tr>`;
+                                                            <td><input type="text" class="form-control" placeholder="Enter Company Name"></td>
+                                                            <td><input type="text" class="form-control" placeholder="Enter Designation"></td>
+                                                            <td><input type="text" class="form-control" placeholder="Enter Location"></td>
+                                                            <td>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control start-date" placeholder="Start Date" autocomplete="off">
+                                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                        <i class="bi bi-calendar"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control end-date" placeholder="End Date" autocomplete="off">
+                                                                    <span class="input-group-text calendar-icon" style="cursor: pointer;">
+                                                                        <i class="bi bi-calendar"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td><input type="number" class="form-control total-years" placeholder="Years" readonly></td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-danger remove-experience-row">
+                                                                    <i class="fas fa-minus"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>`;
                 experienceTableBody.insertAdjacentHTML('beforeend', newRow);
 
                 // Initialize datepicker for the new row
@@ -1345,24 +1363,24 @@
                 const academicTableBody = document.getElementById('academic-rows');
                 // Always add new rows with minus button at the bottom
                 const newRow = `<tr>
-                                        <td><input type="text" class="form-control" placeholder="Enter Education Level"></td>
-                                        <td><input type="text" class="form-control" placeholder="Enter Department"></td>
-                                        <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
-                                        <td>
-                                            <div class="input-group">
-                                                <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
-                                                <span class="input-group-text psIcon" style="cursor: pointer;">
-                                                    <i class="bi bi-calendar"></i>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td><input type="number" class="form-control" placeholder="Enter CGPA"></td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-danger remove-academic-row">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                        </td>
-                                    </tr>`;
+                                                            <td><input type="text" class="form-control" placeholder="Enter Education Level"></td>
+                                                            <td><input type="text" class="form-control" placeholder="Enter Department"></td>
+                                                            <td><input type="text" class="form-control" placeholder="Enter Institute Name"></td>
+                                                            <td>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control passing-year" placeholder="Enter Passing Year" autocomplete="off">
+                                                                    <span class="input-group-text psIcon" style="cursor: pointer;">
+                                                                        <i class="bi bi-calendar"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td><input type="number" class="form-control" placeholder="Enter CGPA"></td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-danger remove-academic-row">
+                                                                    <i class="fas fa-minus"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>`;
                 academicTableBody.insertAdjacentHTML('beforeend', newRow);
 
                 // Initialize datepicker for the new row
